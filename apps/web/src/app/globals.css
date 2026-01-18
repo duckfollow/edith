@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+:root {
+  --foreground-rgb: 32, 33, 36;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+  --google-gray-50: #f8f9fa;
+  --google-gray-100: #f1f3f4;
+  --google-gray-200: #e8eaed;
+  --google-gray-300: #dadce0;
+  --google-gray-600: #5f6368;
+  --google-gray-700: #3c4043;
+  --google-blue: #1a73e8;
+  --google-blue-hover: #1557b0;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: #ffffff;
+  font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Google Photos style scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
