@@ -61,15 +61,17 @@ EDITH is a **desktop-installed web application** that lets you store, browse, an
 
 ## 🗂 Project Structure
 
-edith/
-├─ apps/
-│ ├─ desktop/ # Tauri desktop app
-│ ├─ web/ # Next.js frontend
-│ └─ api/ # NestJS local API
-├─ packages/
-│ ├─ sdk/ # JS SDK
-│ └─ types/ # Shared types
-└─ docs/
+```text
+.
+├── apps
+│   ├── api          # NestJS local server
+│   ├── desktop      # Tauri desktop app
+│   └── web          # Next.js frontend
+├── packages
+│   ├── sdk          # JavaScript SDK
+│   └── types        # Shared TypeScript types
+└── docs             # Documentation
+```
 
 
 ---
