@@ -1,0 +1,12 @@
+{
+  "theme": "dark",
+  "cart": {
+    "items": [
+      {
+        "id": "demo_product",
+        "quantity": 2
+      }
+    ]
+  },
+  "feature.checkoutV2": true
+}

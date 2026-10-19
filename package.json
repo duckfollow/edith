@@ -6,7 +6,10 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "clean": "turbo run clean"
+    "clean": "turbo run clean",
+    "demo:sdk": "node examples/sdk/demo.mjs",
+    "test:sdk": "npm run test --workspace @edith/sdk",
+    "ca:create": "node scripts/create-debug-ca.mjs"
   },
   "devDependencies": {
     "turbo": "^2.3.3",

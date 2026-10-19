@@ -1,25 +1,27 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "appsdesktop",
+  "productName": "EDITH",
   "version": "0.1.0",
   "identifier": "com.prasi.appsdesktop",
   "build": {
-    "beforeDevCommand": "",
-    "devUrl": "http://localhost:3000",
-    "beforeBuildCommand": "",
-    "frontendDist": "../../web/out"
+    "beforeDevCommand": "npm run dev:web",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build:web",
+    "frontendDist": "../dist"
   },
   "app": {
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "appsdesktop",
-        "width": 800,
-        "height": 600
+        "title": "EDITH \u2014 Network Monitor",
+        "width": 1360,
+        "height": 860,
+        "minWidth": 850,
+        "minHeight": 620
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost data:"
     }
   },
   "bundle": {

@@ -1,0 +1,22 @@
+{
+  "name": "@edith/sdk",
+  "version": "0.1.0",
+  "description": "Opt-in local development instrumentation for EDITH",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.mjs"
+    }
+  },
+  "files": [
+    "src"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test src/index.test.mjs"
+  },
+  "license": "MIT"
+}

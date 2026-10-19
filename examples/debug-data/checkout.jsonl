@@ -1,0 +1,6 @@
+{"time":"2026-10-19T14:32:00.000Z","level":"info","source":"api","message":"Server listening on localhost:8080"}
+{"time":"2026-10-19T14:32:01.000Z","level":"debug","source":"api","message":"GET /v1/products · 200 · 128ms"}
+{"time":"2026-10-19T14:32:02.000Z","level":"info","source":"worker","message":"Payment queued · request_id=req_demo"}
+{"time":"2026-10-19T14:32:03.000Z","level":"warn","source":"worker","message":"Gateway response delayed · attempt=1"}
+{"time":"2026-10-19T14:32:04.000Z","level":"error","source":"worker","message":"Payment gateway timeout · request_id=req_demo"}
+{"time":"2026-10-19T14:32:05.000Z","level":"info","source":"api","message":"POST /v1/checkout · 504 · request_id=req_demo"}

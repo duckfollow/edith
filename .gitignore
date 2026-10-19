@@ -35,3 +35,6 @@ src-tauri/gen/
 # NestJS
 apps/api/dist/
 coverage/
+
+# Machine-local CA keys and capture state (never commit)
+/.local/

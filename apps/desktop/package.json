@@ -6,15 +6,20 @@
   "scripts": {
     "dev": "tauri dev",
     "build": "tauri build",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "dev:web": "vite --host 127.0.0.1",
+    "build:web": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test src/model.test.ts src/overview-model.test.ts src/debug-model.test.ts server/local-proxy.test.mjs server/sdk-bridge.test.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2"
+    "@tauri-apps/plugin-opener": "^2",
+    "lucide": "^1.59.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
-    "vite": "^6.0.3",
-    "typescript": "~5.6.2"
+    "typescript": "~5.6.2",
+    "vite": "^6.0.3"
   }
 }
