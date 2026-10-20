@@ -12,7 +12,12 @@ export interface Header {
   value: string;
 }
 export interface HttpEntry {
-  captureKind?: "http" | "tunnel" | "sdk";
+  captureKind?: "http" | "tunnel" | "sdk" | "gateway";
+  gatewayId?: string;
+  gatewayPort?: number;
+  routeId?: string;
+  routePath?: string;
+  upstream?: string;
   requestEncoding?: string;
   requestTruncated?: boolean;
   responseTruncated?: boolean;

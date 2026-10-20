@@ -4,11 +4,50 @@ A local-first, open-source desktop debugging workbench for **macOS, Windows, and
 
 EDITH aims to make the traffic entering and leaving your machine understandable: select an interface, start capture, search packets, and inspect endpoints. No account or central server required.
 
+## Screenshots
+
+### Overview
+
+Request activity, response times, and HTTP status/method breakdowns.
+
+![EDITH Overview dashboard with request metrics, activity calendar, and response-time graphs](screenshot/Opera%20Snapshot_2026-10-21_000914_127.0.0.1.png)
+
+<details>
+<summary>Gateway — visual routing and listener controls</summary>
+
+Configure routes and backends, start or stop listeners, and inspect forwarded requests.
+
+![EDITH Gateway showing the routing canvas, listener controls, and route configuration](screenshot/Opera%20Snapshot_2026-10-21_000954_127.0.0.1.png)
+
+</details>
+
+<details>
+<summary>System Monitor — CPU and RAM</summary>
+
+Machine-wide CPU/RAM graphs and per-core usage.
+
+![EDITH System Monitor with CPU and RAM graphs and logical CPU core usage](screenshot/Opera%20Snapshot_2026-10-21_001019_127.0.0.1.png)
+
+</details>
+
+<details>
+<summary>Network Inspector — requests and responses</summary>
+
+Filter captured requests by Gateway, route, status, and method.
+
+![EDITH Network Inspector showing a captured Gateway request and traffic filters](screenshot/Opera%20Snapshot_2026-10-21_001038_127.0.0.1.png)
+
+</details>
+
 ## Current status
+
+Latest development notes: [20–21 October 2026 updates](docs/updates-2026-10-21.md).
 
 **Early development — file-based debugging tools with a sample packet explorer. A live local HTTP proxy is available in the development runtime. A JavaScript SDK connects fetch, logs, and errors in development. OS packet capture is not implemented.**
 
 Implemented:
+
+- Gateway setup editor with a custom HTML/SVG canvas: route/backend connections, local save, and JSON export. Run up to 8 loopback HTTP Gateways with independent routes and Start/Stop in development; inspect traffic by Gateway and route.
 
 - System Monitor with real machine-wide CPU/RAM, per-core usage, live graphs, pause, and bounded history.
 
@@ -83,7 +122,7 @@ npm run build:web --workspace appsdesktop
 
 The generated frontend files are in `apps/desktop/dist`. This command builds files; it does not start a server.
 
-A static web deployment supports the UI and file-based tools. The live proxy, SDK receiver, and browser CPU/RAM monitor currently depend on the Vite development server and are **not included** in those static files. Use browser development mode above to run those features locally.
+A static web deployment supports the UI and file-based tools. The live proxy, Gateway, SDK receiver, and browser CPU/RAM monitor currently depend on the Vite development server and are **not included** in those static files. Use browser development mode above to run those features locally.
 
 ### Build the desktop app
 
@@ -95,7 +134,15 @@ npm run build --workspace appsdesktop
 
 Tauri builds for the current machine's platform. With the default target directory, application bundles/installers are written under `apps/desktop/src-tauri/target/release/bundle`. Building for each OS requires that platform's build environment; Windows and Linux native builds have not yet been verified.
 
-The packaged desktop app includes native CPU/RAM monitoring and interface discovery. The live HTTP proxy and SDK receiver still require the development runtime and have not yet been packaged for desktop releases.
+The packaged desktop app includes native CPU/RAM monitoring and interface discovery. The live HTTP proxy, Gateway, and SDK receiver still require the development runtime and have not yet been packaged for desktop releases.
+
+### Run the example API
+
+```sh
+npm run demo:api
+```
+
+Opens a local test backend at `http://127.0.0.1:3000` with GET/POST users, delayed responses, intentional errors, and JSONL request logs. See [example API instructions](examples/api/README.md) for requests and inspecting them through EDITH's HTTP proxy. Start Gateway with `/api` routed to this API to call `http://127.0.0.1:8080/api/users`.
 
 ### Run the SDK demo
 

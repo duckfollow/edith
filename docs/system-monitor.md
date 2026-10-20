@@ -30,3 +30,7 @@ The development route accepts only local workspace Host/Origin combinations, rej
 The desktop frontend TypeScript build passes. Node tests verify CPU deltas, normalization, warm-up/counter resets, caching, memory consistency, actual host reads, and endpoint isolation. Model tests verify bounded history, duplicate/out-of-order samples, validation, and missing-interval graphs. A Rust test reads actual macOS metrics, checks CPU warm-up and refresh after an interval, and verifies memory consistency and cached reads. The native code and command registration compile on this macOS machine.
 
 The implementation uses cross-platform providers for macOS/Windows/Linux. Windows and Linux native builds and visual UI checks have not been verified in this environment.
+
+## Per-core cards
+
+Logical CPU cores use responsive cards with Lucide CPU icons, one-decimal measured usage, and segmented usage tracks. Colors are green below 50%, amber from 50%, and red from 80%; these are display thresholds, not hardware health diagnoses. Unknown baselines display an em dash and Warming up without claiming zero usage.

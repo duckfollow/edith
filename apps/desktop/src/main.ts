@@ -1,3 +1,4 @@
+import { mountGateway } from "./gateway";
 import { mountSystemMonitor } from "./system-monitor";
 import { mountOverview } from "./overview";
 import { icon, iconMarkup, mountIcons, prependIcon } from "./icons";
@@ -20,8 +21,16 @@ import {
 } from "./debug-model";
 import type { HttpEntry, Json, LogEntry } from "./debug-model";
 import "./workbench.css";
+import "./dropdown.css";
 
-type Tool = "system" | "overview" | "network" | "logs" | "storage" | "packets";
+type Tool =
+  | "gateway"
+  | "system"
+  | "overview"
+  | "network"
+  | "logs"
+  | "storage"
+  | "packets";
 const plugins: Array<{
   id: Tool;
   icon: IconName;
@@ -33,6 +42,12 @@ const plugins: Array<{
     icon: "overview",
     name: "Overview",
     description: "Workspace metrics and activity graphs",
+  },
+  {
+    id: "gateway",
+    icon: "arrows",
+    name: "Gateway",
+    description: "Design local routes and backend connections",
   },
   {
     id: "system",
@@ -76,6 +91,7 @@ root.innerHTML = `<div class="wb-shell">
   <div class="wb-workspace"><header class="wb-top"><div class="wb-breadcrumb">Local workspace <span>/</span> <strong id="wb-tool-name">Network</strong></div><span class="wb-local">${iconMarkup("shield")} Local processing</span></header>
   <div id="wb-content">
     <section id="tool-overview" class="wb-tool" aria-label="Workspace overview"></section>
+    <section id="tool-gateway" class="wb-tool" aria-label="Gateway setup" hidden></section>
     <section id="tool-system" class="wb-tool" aria-label="System Monitor" hidden></section>
     <section id="tool-network" class="wb-tool" aria-label="HTTP Network Inspector" hidden></section>
     <section id="tool-logs" class="wb-tool" aria-label="Log Viewer" hidden></section>
@@ -110,6 +126,7 @@ function toast(text: string) {
   toastTimer = setTimeout(() => (get("#wb-toast").hidden = true), 6000);
 }
 let active: Tool = "overview";
+let gatewayMounted = false;
 let systemMonitor: ReturnType<typeof mountSystemMonitor> | undefined;
 let overview: ReturnType<typeof mountOverview> | undefined;
 let sdkSelected = false;
@@ -125,11 +142,13 @@ plugins.forEach((plugin) => {
       "small",
       plugin.id === "overview"
         ? "SUMMARY"
-        : plugin.id === "packets"
-          ? "SAMPLE"
-          : ["network", "logs", "system"].includes(plugin.id)
-            ? "LIVE"
-            : "FILE",
+        : plugin.id === "gateway"
+          ? "SETUP"
+          : plugin.id === "packets"
+            ? "SAMPLE"
+            : ["network", "logs", "system"].includes(plugin.id)
+              ? "LIVE"
+              : "FILE",
     ),
   );
   nav.append(button);
@@ -143,6 +162,10 @@ function selectTool(tool: Tool) {
     button.setAttribute("aria-current", p.id === tool ? "page" : "false");
   });
   get("#wb-tool-name").textContent = plugins.find((p) => p.id === tool)!.name;
+  if (tool === "gateway" && !gatewayMounted) {
+    gatewayMounted = true;
+    mountGateway(get("#tool-gateway"));
+  }
   systemMonitor?.setVisible(tool === "system");
   if (tool === "overview") {
     updateOverview();
@@ -305,6 +328,51 @@ let requests: HttpEntry[] = [],
   reveal = false,
   httpTab = "Overview";
 let httpSource = "No file loaded";
+let gatewayInstance = "all";
+let gatewayRequests: HttpEntry[] = [],
+  gatewayLogs: LogEntry[] = [];
+let gatewayView = false,
+  gatewayLogView = false,
+  gatewayRoute = "all";
+const networkOriginSelect = selector(
+  "Traffic source",
+  ["current", "gateway"],
+  (value) => {
+    gatewayView = value === "gateway";
+    httpSelected = null;
+    renderHttp();
+  },
+);
+networkOriginSelect.options[0].text = "Files / HTTP Proxy / selected SDK";
+networkOriginSelect.options[1].text = "Gateway";
+const gatewayInstanceSelect = selector("Gateway instance", ["all"], (value) => {
+  gatewayInstance = value;
+  httpSelected = null;
+  renderHttp();
+});
+const gatewayRouteSelect = selector("Gateway route", ["all"], (value) => {
+  gatewayRoute = value;
+  httpSelected = null;
+  renderHttp();
+});
+within(network, ".wb-filters").append(
+  networkOriginSelect,
+  gatewayInstanceSelect,
+  gatewayRouteSelect,
+);
+function visibleRequests() {
+  return gatewayView
+    ? gatewayRequests.filter(
+        (r) =>
+          (gatewayRoute === "all" || r.routePath === gatewayRoute) &&
+          (gatewayInstance === "all" || r.gatewayId === gatewayInstance),
+      )
+    : requests;
+}
+function networkLabel() {
+  return gatewayView ? "Gateway" : httpSource;
+}
+
 const httpStatusSelect = selector(
   "Statuses",
   ["all", "2xx", "3xx", "4xx", "5xx", "failed"],
@@ -346,6 +414,8 @@ function loadHar(text: string, name: string) {
     toast("Stop the proxy before loading a HAR or demo.");
     return;
   }
+  gatewayView = false;
+  networkOriginSelect.value = "current";
   liveProxy.leaveLive();
   const parsed = parseHar(text);
   requests = parsed;
@@ -401,17 +471,27 @@ function showHttp(entry: HttpEntry) {
         ["Duration", `${entry.duration.toFixed(1)} ms`],
         ["Content size", bytes(entry.size)],
         ["Content type", entry.mimeType || "Unavailable"],
-        ["Source", httpSource],
+        [
+          "Source",
+          entry.captureKind === "gateway"
+            ? `Gateway :${entry.gatewayPort || ""} · ${entry.routePath}`
+            : httpSource,
+        ],
+        ...(entry.upstream
+          ? [["Backend", entry.upstream] as [string, string]]
+          : []),
       ]),
       node(
         "p",
-        entry.captureKind === "sdk"
-          ? `Reported by the connected app SDK. Duration measures fetch until response headers. ${entry.error || "Bodies require explicit captureBodies opt-in."}`
-          : entry.captureKind === "tunnel"
-            ? "HTTPS tunnel only. Status is the tunnel establishment result; duration is connection setup, not an HTTPS response. No encrypted payload is inspected."
-            : entry.captureKind === "http"
-              ? `Captured through the local proxy. ${entry.error || "HTTP forwarded to its upstream destination."}`
-              : "Imported HAR metadata. No requests are replayed or sent.",
+        entry.captureKind === "gateway"
+          ? `Captured through Gateway route ${entry.routePath}. ${entry.error || "Forwarded to backend."}`
+          : entry.captureKind === "sdk"
+            ? `Reported by the connected app SDK. Duration measures fetch until response headers. ${entry.error || "Bodies require explicit captureBodies opt-in."}`
+            : entry.captureKind === "tunnel"
+              ? "HTTPS tunnel only. Status is the tunnel establishment result; duration is connection setup, not an HTTPS response. No encrypted payload is inspected."
+              : entry.captureKind === "http"
+                ? `Captured through the local proxy. ${entry.error || "HTTP forwarded to its upstream destination."}`
+                : "Imported HAR metadata. No requests are replayed or sent.",
         "wb-footnote",
       ),
     );
@@ -489,20 +569,26 @@ function showHttp(entry: HttpEntry) {
 }
 function updateOverview() {
   overview?.update({
-    requests,
-    logs: logEntries,
-    networkSource: httpSource,
-    logSource,
+    requests: visibleRequests(),
+    logs: gatewayLogView ? gatewayLogs : logEntries,
+    networkSource: networkLabel(),
+    logSource: gatewayLogView ? "Gateway errors" : logSource,
   });
 }
 function renderHttp() {
   updateOverview();
-  const filtered = requests.filter((entry) =>
+  gatewayRouteSelect.hidden = !gatewayView;
+  gatewayInstanceSelect.hidden = !gatewayView;
+  setSource(
+    network,
+    `${networkLabel()} · ${visibleRequests().length} retained records`,
+  );
+  const filtered = visibleRequests().filter((entry) =>
     matchesHttp(entry, httpQuery, httpStatus, httpMethod),
   );
   const rows = document.createDocumentFragment();
   const displayed =
-    sdkSelected || liveProxy.isViewing()
+    gatewayView || sdkSelected || liveProxy.isViewing()
       ? filtered.slice(-500).reverse()
       : filtered.slice(0, 500);
   displayed.forEach((entry) => {
@@ -524,7 +610,10 @@ function renderHttp() {
     button.setAttribute("aria-pressed", String(httpSelected === entry.id));
     button.append(
       node("span", maskedUrl(entry.url, reveal)),
-      node("small", entry.mimeType || "Unknown content type"),
+      node(
+        "small",
+        `${entry.captureKind === "gateway" ? `Gateway :${entry.gatewayPort || ""} · ${entry.routePath}` : entry.captureKind === "sdk" ? "SDK" : entry.captureKind ? "HTTP Proxy" : "HAR"} · ${entry.mimeType || "Unknown content type"}`,
+      ),
     );
     url.append(button);
     row.append(
@@ -538,16 +627,18 @@ function renderHttp() {
   });
   within(network, "tbody").replaceChildren(rows);
   within(network, ".wb-result-count").textContent =
-    `${filtered.length} matching requests · ${sdkSelected || liveProxy.isViewing() ? "newest" : "first"} 500 shown`;
+    `${filtered.length} matching requests · ${gatewayView || sdkSelected || liveProxy.isViewing() ? "newest" : "first"} 500 shown`;
   empty(
     network,
     filtered.length,
-    requests.length ? "No matching requests" : "Every request has a story.",
-    requests.length
+    visibleRequests().length
+      ? "No matching requests"
+      : "Every request has a story.",
+    visibleRequests().length
       ? "Adjust the search or filters."
       : "Start the local proxy and route your app through it, import a HAR, or load a demo.",
   );
-  const selected = requests.find((r) => r.id === httpSelected);
+  const selected = visibleRequests().find((r) => r.id === httpSelected);
   if (selected) showHttp(selected);
   else
     inspectorEmpty(
@@ -563,6 +654,12 @@ within(network, '[data-action="demo"]').onclick = () =>
   loadHar(demoHar(), "Demo HAR · generated example");
 within(network, '[data-action="import"]').onclick = () => harFile.click();
 within(network, '[data-action="clear"]').onclick = () => {
+  if (gatewayView) {
+    gatewayRequests = [];
+    httpSelected = null;
+    renderHttp();
+    return;
+  }
   liveProxy.clearView();
   requests = [];
   httpSelected = null;
@@ -576,7 +673,7 @@ within(network, '[data-action="clear"]').onclick = () => {
   renderHttp();
 };
 within(network, '[data-action="export"]').onclick = () => {
-  const filtered = requests.filter((entry) =>
+  const filtered = visibleRequests().filter((entry) =>
     matchesHttp(entry, httpQuery, httpStatus, httpMethod),
   );
   if (!filtered.length) {
@@ -585,7 +682,7 @@ within(network, '[data-action="export"]').onclick = () => {
   }
   download("edith-http-inspection.json", {
     format: "edith-http-inspection",
-    source: httpSource,
+    source: networkLabel(),
     requests: filtered,
   });
 };
@@ -685,13 +782,25 @@ function showLog(entry: LogEntry) {
       ["Timestamp", entry.timestamp || "Not present"],
       ["Source", entry.source],
       ["Line", String(entry.id)],
-      ["File", logSource],
+      ["File", gatewayLogView ? "Gateway runtime" : logSource],
     ]),
     codeSection("RAW EVENT", entry.raw),
   );
 }
+const logOriginSelect = selector(
+  "Log source",
+  ["current", "gateway"],
+  (value) => {
+    gatewayLogView = value === "gateway";
+    logSelected = null;
+    renderLogs();
+  },
+);
+logOriginSelect.options[0].text = "File / selected SDK";
+logOriginSelect.options[1].text = "Gateway errors";
+within(logs, ".wb-filters").append(logOriginSelect);
 function filteredLogs() {
-  return logEntries.filter(
+  return (gatewayLogView ? gatewayLogs : logEntries).filter(
     (entry) =>
       (logLevel === "all" || entry.level === logLevel) &&
       `${entry.message} ${entry.source} ${entry.raw}`
@@ -701,9 +810,15 @@ function filteredLogs() {
 }
 function renderLogs() {
   updateOverview();
+  setSource(
+    logs,
+    gatewayLogView
+      ? `Gateway · ${gatewayLogs.length} retained errors`
+      : logSource,
+  );
   const filtered = filteredLogs();
   const rows = document.createDocumentFragment();
-  (sdkSelected
+  (gatewayLogView || sdkSelected
     ? filtered.slice(-500).reverse()
     : filtered.slice(0, 500)
   ).forEach((entry) => {
@@ -736,12 +851,16 @@ function renderLogs() {
   empty(
     logs,
     filtered.length,
-    logEntries.length ? "No matching events" : "Less noise. More context.",
-    logEntries.length
+    (gatewayLogView ? gatewayLogs : logEntries).length
+      ? "No matching events"
+      : "Less noise. More context.",
+    (gatewayLogView ? gatewayLogs : logEntries).length
       ? "Adjust search or log level."
       : "Import a text or JSONL file. Logs remain on your device.",
   );
-  const selected = logEntries.find((entry) => entry.id === logSelected);
+  const selected = (gatewayLogView ? gatewayLogs : logEntries).find(
+    (entry) => entry.id === logSelected,
+  );
   if (selected) showLog(selected);
   else
     inspectorEmpty(logs, "Select an event to inspect its original log line.");
@@ -754,6 +873,12 @@ within(logs, '[data-action="demo"]').onclick = () =>
   loadLogs(demoLogs, "Demo logs · generated example");
 within(logs, '[data-action="import"]').onclick = () => logFile.click();
 within(logs, '[data-action="clear"]').onclick = () => {
+  if (gatewayLogView) {
+    gatewayLogs = [];
+    logSelected = null;
+    renderLogs();
+    return;
+  }
   logEntries = [];
   logSelected = null;
   setSource(logs, "No file loaded");
@@ -767,7 +892,7 @@ within(logs, '[data-action="export"]').onclick = () => {
   }
   download("edith-logs.json", {
     format: "edith-logs",
-    source: logSource,
+    source: gatewayLogView ? "Gateway errors" : logSource,
     events,
   });
 };
@@ -926,6 +1051,8 @@ within(storage, '[data-action="export"]').onclick = () => {
 const sdk = mountSdkConnection(root, {
   selection(app, events) {
     sdkSelected = !!app;
+    gatewayView = gatewayLogView = false;
+    networkOriginSelect.value = logOriginSelect.value = "current";
     requests = [];
     logEntries = [];
     httpSelected = logSelected = null;
@@ -1019,3 +1146,112 @@ renderHttp();
 renderLogs();
 renderStorage();
 selectTool(active);
+
+let gatewayCursor = 0;
+async function pollGatewayEvents() {
+  try {
+    const response = await fetch(
+      `/__edith_gateway/events?after=${gatewayCursor}`,
+      { signal: AbortSignal.timeout(4000), cache: "no-store" },
+    );
+    if (!response.ok) return;
+    const data = (await response.json()) as {
+      lastId: number;
+      records: HttpEntry[];
+      logs: LogEntry[];
+    };
+    if (
+      !Array.isArray(data.records) ||
+      !Array.isArray(data.logs) ||
+      !Number.isSafeInteger(data.lastId)
+    )
+      return;
+    if (data.lastId < gatewayCursor) {
+      gatewayCursor = 0;
+      gatewayRequests = [];
+      gatewayLogs = [];
+      return;
+    }
+    if (
+      data.records.length &&
+      !gatewayRequests.length &&
+      !requests.length &&
+      !sdkSelected
+    ) {
+      gatewayView = true;
+      networkOriginSelect.value = "gateway";
+    }
+    gatewayRequests = [...gatewayRequests, ...data.records].slice(-256);
+    gatewayLogs = [...gatewayLogs, ...data.logs].slice(-256);
+    gatewayCursor = data.lastId;
+    for (const entry of data.records) {
+      if (
+        entry.gatewayId &&
+        ![...gatewayInstanceSelect.options].some(
+          (o) => o.value === entry.gatewayId,
+        )
+      ) {
+        const o = node("option", `Gateway :${entry.gatewayPort}`);
+        o.value = entry.gatewayId;
+        gatewayInstanceSelect.append(o);
+      }
+
+      if (
+        entry.routePath &&
+        ![...gatewayRouteSelect.options].some(
+          (o) => o.value === entry.routePath,
+        )
+      ) {
+        const o = node("option", entry.routePath);
+        o.value = entry.routePath;
+        gatewayRouteSelect.append(o);
+      }
+      if (
+        ![...httpMethodSelect.options].some((o) => o.value === entry.method)
+      ) {
+        const o = node("option", entry.method);
+        o.value = entry.method;
+        httpMethodSelect.append(o);
+      }
+    }
+    if (gatewayView) renderHttp();
+    if (gatewayLogView) renderLogs();
+  } catch {
+    /* Development service can be unavailable in packaged/static builds. */
+  } finally {
+    setTimeout(pollGatewayEvents, 1000);
+  }
+}
+void pollGatewayEvents();
+window.addEventListener("edith-gateway-view", (event) => {
+  const detail = (event as CustomEvent<{ gatewayId: string; path: string }>)
+    .detail;
+  const path = detail.path;
+  gatewayInstance = detail.gatewayId;
+  if (
+    ![...gatewayInstanceSelect.options].some(
+      (o) => o.value === detail.gatewayId,
+    )
+  ) {
+    const o = node("option", "Selected Gateway");
+    o.value = detail.gatewayId;
+    gatewayInstanceSelect.append(o);
+  }
+  gatewayInstanceSelect.value = detail.gatewayId;
+  gatewayView = true;
+  networkOriginSelect.value = "gateway";
+  gatewayRoute = path;
+  if (![...gatewayRouteSelect.options].some((o) => o.value === path)) {
+    const o = node("option", path);
+    o.value = path;
+    gatewayRouteSelect.append(o);
+  }
+  gatewayRouteSelect.value = path;
+  httpQuery = "";
+  httpStatus = httpMethod = "all";
+  httpStatusSelect.value = httpMethodSelect.value = "all";
+  within<HTMLInputElement>(network, 'input[type="search"]').value = "";
+  httpSelected = null;
+  selectTool("network");
+  renderHttp();
+});

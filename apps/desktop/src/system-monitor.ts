@@ -117,21 +117,60 @@ export function mountSystemMonitor(root: HTMLElement) {
     const cores = get("cores");
     cores.replaceChildren();
     if (latest) {
-      get("cpu-model").textContent = latest.cpuModel;
+      get("cpu-model").textContent =
+        `${latest.cpuModel} · ${latest.cores.length} logical cores`;
       latest.cores.forEach((usage, i) => {
-        const item = el("div", "", "system-core");
-        item.append(
-          el("span", `CPU ${i + 1}`),
-          el("strong", usage === null ? "Warming up" : `${usage.toFixed(0)}%`),
+        const item = el("div", "", "system-core-card");
+        const level =
+          usage === null
+            ? "unknown"
+            : usage >= 80
+              ? "high"
+              : usage >= 50
+                ? "moderate"
+                : "normal";
+        item.dataset.load = level;
+        const header = el("div", "", "system-core-header");
+        const name = el("span", "", "system-core-name");
+        name.append(
+          icon("cpu"),
+          el("span", `CPU ${String(i + 1).padStart(2, "0")}`),
         );
-        const progress = document.createElement("progress");
-        progress.max = 100;
-        progress.value = usage ?? 0;
-        progress.setAttribute(
-          "aria-label",
-          `Logical CPU ${i + 1} ${usage === null ? "warming up" : usage.toFixed(1) + " percent"}`,
+        header.append(
+          name,
+          el(
+            "span",
+            usage === null
+              ? "Warming up"
+              : level === "high"
+                ? "High load"
+                : level === "moderate"
+                  ? "Moderate"
+                  : "Normal",
+            "system-core-state",
+          ),
         );
-        item.append(progress);
+        const value = el("div", "", "system-core-value");
+        value.append(
+          el("strong", usage === null ? "—" : usage.toFixed(1)),
+          el("span", "%"),
+        );
+        const track = el("div", "", "system-core-track");
+        if (usage !== null) {
+          track.setAttribute("role", "progressbar");
+          track.setAttribute("aria-label", `CPU ${i + 1} usage`);
+          track.setAttribute("aria-valuemin", "0");
+          track.setAttribute("aria-valuemax", "100");
+          track.setAttribute("aria-valuenow", String(usage));
+        } else
+          track.setAttribute(
+            "aria-label",
+            `CPU ${i + 1}: waiting for a measured sample`,
+          );
+        const fill = el("span", "", "system-core-fill");
+        fill.style.width = `${usage ?? 0}%`;
+        track.append(fill);
+        item.append(header, value, track);
         cores.append(item);
       });
     } else {

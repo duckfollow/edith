@@ -9,7 +9,8 @@
     "clean": "turbo run clean",
     "demo:sdk": "node examples/sdk/demo.mjs",
     "test:sdk": "npm run test --workspace @edith/sdk",
-    "ca:create": "node scripts/create-debug-ca.mjs"
+    "ca:create": "node scripts/create-debug-ca.mjs",
+    "demo:api": "node examples/api/server.mjs"
   },
   "devDependencies": {
     "turbo": "^2.3.3",

@@ -67,20 +67,44 @@ export function mountOverview(root: HTMLElement, actions: Actions) {
       );
       return;
     }
-    const max = Math.max(...values.map(([, count]) => count));
+    const total = values.reduce((sum, [, count]) => sum + count, 0);
     values.forEach(([name, count]) => {
       const button = el("button", "", "ov-bar");
       button.type = "button";
       button.setAttribute("aria-label", `Inspect ${count} ${name} requests`);
-      const progress = el("progress");
-      progress.max = max;
-      progress.value = count;
-      progress.setAttribute("aria-label", `${name} requests`);
-      button.append(
-        el("span", name),
-        progress,
+      const percent = total ? (count / total) * 100 : 0;
+      const colors: Record<string, string> = {
+        "2xx": "#3fb950",
+        "3xx": "#58a6ff",
+        "4xx": "#d29922",
+        "5xx": "#f85149",
+        Failed: "#f85149",
+        GET: "#58a6ff",
+        POST: "#3fb950",
+        PUT: "#bc8cff",
+        PATCH: "#d29922",
+        DELETE: "#f85149",
+        HEAD: "#79c0ff",
+        OPTIONS: "#a5a9ff",
+      };
+      button.style.setProperty("--bar-color", colors[name] || "#8b949e");
+      const label = el("span", "", "ov-distribution-label");
+      label.append(el("i", "", "ov-distribution-dot"), el("span", name));
+      const track = el("span", "", "ov-distribution-track");
+      track.setAttribute("aria-hidden", "true");
+      const fill = el("span", "", "ov-distribution-fill");
+      fill.style.width = `${percent}%`;
+      track.append(fill);
+      const stats = el("span", "", "ov-distribution-stats");
+      stats.append(
         el("strong", count.toLocaleString()),
+        el("small", `${percent.toFixed(1)}%`),
       );
+      button.setAttribute(
+        "aria-label",
+        `Inspect ${count} ${name} requests, ${percent.toFixed(1)} percent of this window`,
+      );
+      button.append(label, track, stats);
       button.onclick = () =>
         actions.network(
           kind === "methods" ? name : undefined,

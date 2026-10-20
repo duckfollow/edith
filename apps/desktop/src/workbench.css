@@ -1729,35 +1729,202 @@ tbody tr.selected {
 }
 .system-cores {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 18px;
-  margin-top: 22px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
 }
-.system-core {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-  color: var(--gh-muted);
-  font-size: 11px;
+.system-core-card {
+  --core-color: var(--gh-green);
+  background: var(--gh-surface);
+  border: 1px solid var(--gh-border);
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 0;
 }
-.system-core > strong {
+.system-core-card[data-load="moderate"] {
+  --core-color: var(--gh-warning);
+}
+.system-core-card[data-load="high"] {
+  --core-color: var(--gh-danger);
+}
+.system-core-card[data-load="unknown"] {
+  --core-color: var(--gh-muted);
+}
+.system-core-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.system-core-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font:
-    11px ui-monospace,
-    SFMono-Regular,
-    Consolas,
+    500 11px ui-monospace,
     monospace;
-  color: var(--gh-text);
+  color: var(--gh-muted);
+  white-space: nowrap;
 }
-.system-core progress {
-  grid-column: 1/-1;
-  width: 100%;
-  height: 6px;
-  accent-color: var(--gh-green);
-  border: 0;
+.system-core-name svg {
+  width: 14px;
+  height: 14px;
+}
+.system-core-state {
+  font-size: 9px;
+  color: var(--core-color);
+  white-space: nowrap;
+}
+.system-core-state::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  margin-right: 5px;
+  vertical-align: 1px;
+}
+.system-core-value {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin: 18px 0 15px;
+  font-variant-numeric: tabular-nums;
+}
+.system-core-value strong {
+  color: var(--gh-text);
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.system-core-value > span {
+  font-size: 12px;
+  color: var(--gh-muted);
+}
+.system-core-track {
+  position: relative;
+  height: 7px;
+  background: var(--gh-subtle);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.system-core-fill {
+  display: block;
+  height: 100%;
+  background: var(--core-color);
+  border-radius: inherit;
+}
+.system-core-track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent calc(10% - 2px),
+    var(--gh-surface) calc(10% - 2px),
+    var(--gh-surface) 10%
+  );
+  pointer-events: none;
+}
+@media (max-width: 1150px) {
+  .system-cores {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 850px) {
+  .system-cores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .system-cores {
+    grid-template-columns: 1fr;
+  }
 }
 .system-charts .ts-chart {
   color: var(--gh-green);
 }
 .system-charts > .ov-chart:nth-child(2) .ts-chart {
   color: var(--gh-blue);
+}
+
+/* Status and method distributions share a quiet track and semantic accents. */
+.ov-breakdowns .ov-chart {
+  padding-bottom: 16px;
+}
+.ov-breakdowns .ov-chart-heading {
+  margin-bottom: 18px;
+}
+.ov-breakdowns .ov-bar {
+  grid-template-columns: 80px minmax(0, 1fr) 78px;
+  gap: 16px;
+  padding: 12px 10px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  transition:
+    background-color 120ms,
+    border-color 120ms;
+}
+.ov-breakdowns .ov-bar + .ov-bar {
+  margin-top: 4px;
+}
+.ov-breakdowns .ov-bar:hover {
+  background: #161b22;
+  border-color: #30363d;
+}
+.ov-distribution-label {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  font:
+    600 12px ui-monospace,
+    monospace;
+}
+.ov-distribution-dot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--bar-color);
+}
+.ov-distribution-track {
+  display: block;
+  height: 8px;
+  border-radius: 5px;
+  background: #21262d;
+  overflow: hidden;
+}
+.ov-distribution-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--bar-color);
+}
+.ov-distribution-stats {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 9px;
+  font-variant-numeric: tabular-nums;
+}
+.ov-breakdowns .ov-bar strong {
+  font:
+    600 13px ui-monospace,
+    monospace;
+}
+.ov-distribution-stats small {
+  font-size: 11px;
+  color: #8b949e;
+  min-width: 39px;
+  text-align: right;
+}
+@media (max-width: 600px) {
+  .ov-breakdowns .ov-bar {
+    grid-template-columns: 65px minmax(0, 1fr) 75px;
+    gap: 8px;
+    padding-inline: 3px;
+  }
 }
