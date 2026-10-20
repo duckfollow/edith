@@ -48,6 +48,82 @@ Install the Rust toolchain, Tauri prerequisites, and the platform capture depend
 npm run dev --workspace appsdesktop
 ```
 
+### Troubleshooting: `cargo metadata` not found
+
+If desktop startup fails with `failed to run cargo metadata` and `No such file or directory (os error 2)`, Cargo is either not installed or not available on your terminal's `PATH`. Cargo is installed together with Rust through [rustup](https://www.rust-lang.org/tools/install/).
+
+#### macOS and Linux: Rust / Cargo
+
+Install Rust if it is missing:
+
+```sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+Choose the default installation, then load the environment in your current Bash/Zsh terminal. If Rust is already installed, try this step before reinstalling:
+
+```sh
+source "$HOME/.cargo/env"
+cargo --version
+rustc --version
+```
+
+For other shells, follow the environment instructions printed by rustup, or reopen your terminal.
+
+#### macOS: native build dependencies
+
+Install Xcode Command Line Tools if they are missing:
+
+```sh
+xcode-select --install
+```
+
+#### Linux: native build dependencies
+
+On **Ubuntu / Debian** releases providing WebKitGTK 4.1 development packages:
+
+```sh
+sudo apt update
+sudo apt install build-essential pkg-config curl wget file \
+  libwebkit2gtk-4.1-dev libxdo-dev libssl-dev \
+  libayatana-appindicator3-dev librsvg2-dev libpcap-dev
+```
+
+EDITH needs `libpcap-dev` in addition to the Tauri dependencies because the native app uses the Rust `pcap` crate. For Fedora, Arch, and other distributions, use the matching packages in the [Tauri Linux prerequisites](https://v2.tauri.app/start/prerequisites/#linux), plus your distribution's libpcap development package. The commands above are not intended for every Linux distribution.
+
+#### Windows: Rust / Cargo and native build dependencies
+
+1. Download and run the official [Rust installer](https://www.rust-lang.org/tools/install/), selecting the default **MSVC** toolchain for your architecture.
+2. Install **Visual Studio Build Tools** with **Desktop development with C++**, including MSVC and a Windows SDK. Install **Microsoft Edge WebView2 Runtime** if it is missing; see the [Tauri Windows prerequisites](https://v2.tauri.app/start/prerequisites/#windows).
+3. Close and reopen PowerShell or Command Prompt, then check:
+
+```powershell
+cargo --version
+rustc --version
+```
+
+If Rust is installed but Cargo is still not found, temporarily add its default directory to the current **PowerShell** session and check again:
+
+```powershell
+$env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"
+cargo --version
+```
+
+If this works, add `%USERPROFILE%\.cargo\bin` to your user's **Path** through Windows Environment Variables, then reopen your terminal. Do not use `source "$HOME/.cargo/env"` in PowerShell or Command Prompt; that command is for Unix shells.
+
+The native `pcap` dependency also requires **Npcap** and the **Npcap SDK** with the library path configured for the selected architecture. Follow the [pcap Windows setup](https://docs.rs/pcap/latest/pcap/#windows) and [development setup](docs/development.md); Npcap is not bundled with EDITH.
+
+#### Retry desktop startup
+
+Once `cargo --version` works and the platform dependencies are installed, run from the repository root on any of the three operating systems:
+
+```sh
+npm ci
+npm run dev --workspace appsdesktop
+```
+
+If you only need the web UI, use the [browser preview](#quick-start-browser-preview) without installing Rust, Cargo, or native capture dependencies. These setup instructions do not imply that Windows and Linux native builds have already been verified.
+
 ## Checks
 
 ```sh
