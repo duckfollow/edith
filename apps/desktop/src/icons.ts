@@ -1,5 +1,7 @@
 import {
   Activity,
+  Cpu,
+  MemoryStick,
   LayoutDashboard,
   ArrowDown,
   ArrowLeftRight,
@@ -28,6 +30,8 @@ import {
   createElement,
 } from "lucide";
 const icons = {
+  cpu: Cpu,
+  memory: MemoryStick,
   overview: LayoutDashboard,
   activity: Activity,
   arrowDown: ArrowDown,

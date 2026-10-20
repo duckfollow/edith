@@ -10,6 +10,8 @@ EDITH aims to make the traffic entering and leaving your machine understandable:
 
 Implemented:
 
+- System Monitor with real machine-wide CPU/RAM, per-core usage, live graphs, pause, and bounded history.
+
 - Overview with request activity/latency graphs, HTTP status/method breakdowns, and log error totals.
 
 - Opt-in JavaScript SDK with pairing, app selection, fetch instrumentation, and live logs/errors.
@@ -27,26 +29,92 @@ Implemented:
 
 Next: package the local proxy for desktop releases, a restricted platform capture helper, real packet parsing, robust capture lifecycle, PCAP files, and platform release validation. Encrypted traffic will not automatically expose HTTPS content. Per-app attribution is a later platform-specific feature.
 
-See [Overview and graphs](docs/overview.md), [SDK setup and demo](docs/sdk.md), [live proxy setup](docs/local-proxy.md), [debug tools and sample files](docs/debug-tools.md), [product scope and architecture](docs/network-monitor.md) and [development setup](docs/development.md).
+See [System Monitor](docs/system-monitor.md), [Overview and graphs](docs/overview.md), [SDK setup and demo](docs/sdk.md), [live proxy setup](docs/local-proxy.md), [debug tools and sample files](docs/debug-tools.md), [product scope and architecture](docs/network-monitor.md) and [development setup](docs/development.md).
 
-## Quick start: browser preview
+## Running EDITH
 
-From the repository root:
+Run all commands below from the repository root. Use **Node.js 22.18+ or 24+** and npm. The same npm commands work on macOS, Windows, and Linux.
+
+### 1. Install dependencies
+
+For a new checkout:
 
 ```sh
+git clone https://github.com/duckfollow/edith.git
+cd edith
 npm ci
+```
+
+If you already have the repository, open a terminal in its folder and run `npm ci`. Run it again when the lockfile changes.
+
+### Quick start: browser preview
+
+This is the easiest way to run EDITH. It does **not** require Rust, Cargo, Tauri build tools, or a separate API server.
+
+```sh
 npm run dev:web --workspace appsdesktop
 ```
 
-Open `http://localhost:1420`. In Network, click **Start proxy** and [route a test app through it](docs/local-proxy.md) to see live requests. Alternatively, import a file or click **Load demo** to try synthetic data. The Packets tool has its own **Start sample** control. This preview does not capture network packets.
+Open **http://127.0.0.1:1420/** and keep the terminal running. Stop it with **Ctrl+C**.
 
-## Desktop development
+- **Overview, Network, Logs, and Storage:** import files or click **Load demo** for synthetic data.
+- **System Monitor:** displays real CPU/RAM of the machine running the development server.
+- **Live HTTP proxy:** in Network, click **Start proxy**, then [configure a test app to use it](docs/local-proxy.md). The default address is `127.0.0.1:8899`; requests are not routed there automatically. HTTPS currently shows CONNECT tunnel metadata, without decrypted contents.
+- **SDK connection:** enable the receiver and connect a development app using the [SDK instructions](docs/sdk.md).
+- **Packets:** **Start sample** generates sample packets. Live OS packet capture is not implemented.
 
-Install the Rust toolchain, Tauri prerequisites, and the platform capture dependency first; see [setup](docs/development.md).
+The preview listens on loopback. If port `1420` is already in use, stop the existing EDITH preview before starting another one.
+
+### Desktop development
+
+Install Rust/Cargo, the Tauri prerequisites, and your platform's native capture dependency first; see [development setup](docs/development.md) and the troubleshooting steps below. Then run:
 
 ```sh
 npm run dev --workspace appsdesktop
 ```
+
+This opens the native EDITH window and starts its web development server automatically. Stop any browser preview using port `1420` before running this command. Keep the terminal running; **Ctrl+C** stops the development session.
+
+### Build the web frontend
+
+```sh
+npm run build:web --workspace appsdesktop
+```
+
+The generated frontend files are in `apps/desktop/dist`. This command builds files; it does not start a server.
+
+A static web deployment supports the UI and file-based tools. The live proxy, SDK receiver, and browser CPU/RAM monitor currently depend on the Vite development server and are **not included** in those static files. Use browser development mode above to run those features locally.
+
+### Build the desktop app
+
+With the native dependencies installed, run:
+
+```sh
+npm run build --workspace appsdesktop
+```
+
+Tauri builds for the current machine's platform. With the default target directory, application bundles/installers are written under `apps/desktop/src-tauri/target/release/bundle`. Building for each OS requires that platform's build environment; Windows and Linux native builds have not yet been verified.
+
+The packaged desktop app includes native CPU/RAM monitoring and interface discovery. The live HTTP proxy and SDK receiver still require the development runtime and have not yet been packaged for desktop releases.
+
+### Run the SDK demo
+
+Start EDITH in browser or desktop development mode, open **SDK connection**, and enable the receiver. In another terminal at the repository root, replace `YOUR_PAIRING_TOKEN` with the token shown in EDITH:
+
+macOS / Linux (Bash or Zsh):
+
+```sh
+EDITH_TOKEN='YOUR_PAIRING_TOKEN' npm run demo:sdk
+```
+
+Windows PowerShell:
+
+```powershell
+$env:EDITH_TOKEN = 'YOUR_PAIRING_TOKEN'
+npm run demo:sdk
+```
+
+Select the demo app in EDITH to inspect its requests, logs, and errors. Stop the demo with **Ctrl+C**. See [SDK setup and demo](docs/sdk.md) for integration details.
 
 ### Troubleshooting: `cargo metadata` not found
 

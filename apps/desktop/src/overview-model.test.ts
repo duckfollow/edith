@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { summarize } from "./overview-model.ts";
+import { activityCalendar, summarize } from "./overview-model.ts";
 import { parseHar, demoHar, parseLogs, demoLogs } from "./debug-model.ts";
 test("overview excludes successful CONNECT from HTTP statuses, failures and duration statistics", () => {
   const requests = parseHar(demoHar());
@@ -59,4 +59,39 @@ test("single timestamp and endpoint buckets retain every event", () => {
   assert.equal(result.buckets.length, 24);
   assert.equal(result.buckets[result.buckets.length - 1]?.count, 2);
   assert.equal(result.methods[0][1], 2);
+});
+
+test("activity calendar has 365 local days, Sunday-first weeks, and no fabricated counts", () => {
+  const request = parseHar(demoHar())[0];
+  const time = new Date(2026, 9, 20, 12).toISOString();
+  const result = activityCalendar([
+    { ...request, timestamp: time },
+    { ...request, timestamp: time },
+    { ...request, timestamp: time, method: "CONNECT" },
+  ]);
+  assert.equal(result.days.length, 371);
+  assert.equal(result.days.filter((d) => d.inRange).length, 365);
+  assert.equal(result.total, 2);
+  assert.equal(result.activeDays, 1);
+  assert.equal(result.days.filter((d) => d.count > 0)[0].level, 4);
+  result.days.forEach((day, i) =>
+    assert.equal(new Date(day.timestamp).getDay(), i % 7),
+  );
+  assert.equal(new Set(result.days.map((d) => d.key)).size, 371);
+});
+test("calendar excludes old and undated records and scales levels within its actual year", () => {
+  const request = parseHar(demoHar())[0],
+    time = new Date(2026, 9, 20, 12).toISOString(),
+    old = new Date(2020, 0, 1, 12).toISOString();
+  const result = activityCalendar([
+    { ...request, timestamp: time },
+    ...Array.from({ length: 20 }, () => ({ ...request, timestamp: old })),
+    { ...request, timestamp: "invalid" },
+  ]);
+  assert.equal(result.total, 1);
+  assert.equal(result.undated, 1);
+  assert.equal(result.days.find((d) => d.count === 1)?.level, 4);
+  const empty = activityCalendar([], new Date(2026, 2, 9, 12).valueOf());
+  assert.equal(empty.total, 0);
+  assert.ok(empty.days.every((d) => d.count === 0 && d.level === 0));
 });

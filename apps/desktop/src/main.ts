@@ -1,3 +1,4 @@
+import { mountSystemMonitor } from "./system-monitor";
 import { mountOverview } from "./overview";
 import { icon, iconMarkup, mountIcons, prependIcon } from "./icons";
 import type { IconName } from "./icons";
@@ -20,7 +21,7 @@ import {
 import type { HttpEntry, Json, LogEntry } from "./debug-model";
 import "./workbench.css";
 
-type Tool = "overview" | "network" | "logs" | "storage" | "packets";
+type Tool = "system" | "overview" | "network" | "logs" | "storage" | "packets";
 const plugins: Array<{
   id: Tool;
   icon: IconName;
@@ -32,6 +33,12 @@ const plugins: Array<{
     icon: "overview",
     name: "Overview",
     description: "Workspace metrics and activity graphs",
+  },
+  {
+    id: "system",
+    icon: "cpu",
+    name: "System Monitor",
+    description: "Whole-machine CPU and RAM metrics",
   },
   {
     id: "network",
@@ -69,6 +76,7 @@ root.innerHTML = `<div class="wb-shell">
   <div class="wb-workspace"><header class="wb-top"><div class="wb-breadcrumb">Local workspace <span>/</span> <strong id="wb-tool-name">Network</strong></div><span class="wb-local">${iconMarkup("shield")} Local processing</span></header>
   <div id="wb-content">
     <section id="tool-overview" class="wb-tool" aria-label="Workspace overview"></section>
+    <section id="tool-system" class="wb-tool" aria-label="System Monitor" hidden></section>
     <section id="tool-network" class="wb-tool" aria-label="HTTP Network Inspector" hidden></section>
     <section id="tool-logs" class="wb-tool" aria-label="Log Viewer" hidden></section>
     <section id="tool-storage" class="wb-tool" aria-label="Storage Inspector" hidden></section>
@@ -102,6 +110,7 @@ function toast(text: string) {
   toastTimer = setTimeout(() => (get("#wb-toast").hidden = true), 6000);
 }
 let active: Tool = "overview";
+let systemMonitor: ReturnType<typeof mountSystemMonitor> | undefined;
 let overview: ReturnType<typeof mountOverview> | undefined;
 let sdkSelected = false;
 const nav = get("#wb-nav");
@@ -118,7 +127,7 @@ plugins.forEach((plugin) => {
         ? "SUMMARY"
         : plugin.id === "packets"
           ? "SAMPLE"
-          : ["network", "logs"].includes(plugin.id)
+          : ["network", "logs", "system"].includes(plugin.id)
             ? "LIVE"
             : "FILE",
     ),
@@ -134,6 +143,7 @@ function selectTool(tool: Tool) {
     button.setAttribute("aria-current", p.id === tool ? "page" : "false");
   });
   get("#wb-tool-name").textContent = plugins.find((p) => p.id === tool)!.name;
+  systemMonitor?.setVisible(tool === "system");
   if (tool === "overview") {
     updateOverview();
     overview?.render();
@@ -1002,6 +1012,7 @@ overview = mountOverview(get("#tool-overview"), {
     loadLogs(demoLogs, "Demo logs · generated example");
   },
 });
+systemMonitor = mountSystemMonitor(get("#tool-system"));
 mountIcons(root);
 mountPacketTool(get("#packet-tool"));
 renderHttp();

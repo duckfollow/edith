@@ -104,3 +104,70 @@ export function summarize(
     undated: validHttp.length < http.length,
   };
 }
+
+export interface ActivityDay {
+  key: string;
+  timestamp: number;
+  count: number;
+  level: number;
+  inRange: boolean;
+}
+function dayKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+/** Local calendar days, not fixed UTC durations: DST must not shift grid rows. */
+export function activityCalendar(requests: HttpEntry[], anchor = Date.now()) {
+  const http = requests.filter(
+    (r) => r.captureKind !== "tunnel" && r.method.toUpperCase() !== "CONNECT",
+  );
+  const dated = http
+    .map((r) => Date.parse(r.timestamp))
+    .filter(Number.isFinite);
+  const end = new Date(dated.length ? Math.max(...dated) : anchor);
+  end.setHours(12, 0, 0, 0);
+  const start = new Date(end);
+  start.setDate(start.getDate() - 364);
+  const gridStart = new Date(start);
+  gridStart.setDate(gridStart.getDate() - gridStart.getDay());
+  const counts = new Map<string, number>();
+  for (const time of dated) {
+    const key = dayKey(new Date(time));
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  const max = Math.max(
+    1,
+    ...[...counts]
+      .filter(([key]) => key >= dayKey(start) && key <= dayKey(end))
+      .map(([, count]) => count),
+  );
+  const days: ActivityDay[] = [];
+  let total = 0,
+    activeDays = 0;
+  for (let i = 0; i < 371; i++) {
+    const date = new Date(gridStart);
+    date.setDate(gridStart.getDate() + i);
+    const inRange = date >= start && date <= end;
+    const count = inRange ? counts.get(dayKey(date)) || 0 : 0;
+    if (inRange) {
+      total += count;
+      if (count) activeDays++;
+    }
+    days.push({
+      key: dayKey(date),
+      timestamp: date.valueOf(),
+      count,
+      level: count ? Math.max(1, Math.ceil((count / max) * 4)) : 0,
+      inRange,
+    });
+  }
+  // A year fits 53 week columns; padding outside the 365-day window is blank.
+  return {
+    days,
+    total,
+    activeDays,
+    max,
+    start: dayKey(start),
+    end: dayKey(end),
+    undated: http.length - dated.length,
+  };
+}

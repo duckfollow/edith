@@ -74,3 +74,11 @@ The Vite plugin exposes same-origin local proxy controls. See [setup and boundar
 ## Interface icons
 
 Desktop icons use the `lucide` package through `src/icons.ts`. Import only the icons used by the UI. Keep decorative SVGs hidden from assistive technology, preserve button text/accessible names, and use `setIconLabel` when changing a control state so its icon changes with its label. Icons are bundled locally; no CDN is required.
+
+## Visual theme
+
+The desktop uses shared `--gh-*` dark theme tokens declared in `src/styles.css` and GitHub-inspired component styling in `src/workbench.css`. The contribution-style request calendar uses five fixed green intensity steps and reports retained data rather than fabricated historical activity. See [Overview definitions](overview.md).
+
+## System Monitor
+
+See [System Monitor](system-monitor.md) for CPU/RAM semantics and sampling lifecycle. The desktop now includes a native `sysinfo` command; native CPU/memory tests compile and pass on the current macOS machine. The development server has a Node OS provider for the browser preview. This newer validation supersedes the earlier missing-Cargo note for this command only; Windows/Linux and interface-capture behavior remain unverified.

@@ -1,3 +1,4 @@
+import { createSystemMonitor } from "./system-monitor.mjs";
 import type { Plugin } from "vite";
 import { createSdkBridge } from "./sdk-bridge.mjs";
 import { createLocalProxy } from "./local-proxy.mjs";
@@ -11,6 +12,10 @@ export function localProxyPlugin(): Plugin {
       const bridge = createSdkBridge({
         controlOrigin: `http://127.0.0.1:${port}`,
       });
+      const systemMonitor = createSystemMonitor({
+        controlOrigin: `http://127.0.0.1:${port}`,
+      });
+      server.middlewares.use(systemMonitor.middleware);
       server.middlewares.use((req, res, next) => {
         void bridge.middleware(req, res, next).catch(() => {
           if (!res.headersSent) {

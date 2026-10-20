@@ -1,6 +1,7 @@
+import { renderTimeSeries } from "./time-series";
 import { icon, prependIcon } from "./icons";
 import type { HttpEntry, LogEntry } from "./debug-model";
-import { summarize } from "./overview-model";
+import { activityCalendar, summarize } from "./overview-model";
 import type { OverviewWindow, Bucket } from "./overview-model";
 interface Data {
   requests: HttpEntry[];
@@ -23,22 +24,8 @@ function el<K extends keyof HTMLElementTagNameMap>(
   node.className = cls;
   return node;
 }
-function svg<K extends keyof SVGElementTagNameMap>(
-  tag: K,
-  attrs: Record<string, string | number> = {},
-  text = "",
-) {
-  const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
-  for (const [key, value] of Object.entries(attrs))
-    node.setAttribute(key, String(value));
-  if (text) node.textContent = text;
-  return node;
-}
-function clock(time: number) {
-  return new Date(time).toLocaleTimeString("en-GB", { hour12: false });
-}
 export function mountOverview(root: HTMLElement, actions: Actions) {
-  root.innerHTML = `<div class="ov-header"><div><div class="wb-eyebrow">WORKSPACE HEALTH</div><h1>Overview</h1><p>Requests, response times, and application logs at a glance.</p></div><div class="ov-actions"><button data-ov="demo">Load overview demo</button><select data-ov="window" aria-label="Overview time window"><option value="all">All retained</option><option value="60s">Latest 60 seconds</option><option value="5m">Latest 5 minutes</option></select></div></div><div class="ov-sources"><span data-ov="network-source"></span><span data-ov="log-source"></span></div><p class="ov-scope">Retained Network & Logs data, independent of table filters. CONNECT tunnels are counted separately. Time windows end at the latest recorded event.</p><div class="ov-metrics"></div><div class="ov-charts"><section class="ov-chart"><div class="ov-chart-heading"><h2>Request activity</h2><span>Requests per bucket</span></div><div data-ov="activity" class="ov-plot"></div></section><section class="ov-chart"><div class="ov-chart-heading"><h2>Response time</h2><span>Mean duration per bucket · ms</span></div><div data-ov="latency" class="ov-plot"></div></section></div><div class="ov-breakdowns"><section class="ov-chart"><div class="ov-chart-heading"><h2>HTTP status</h2><span>Click to inspect</span></div><div data-ov="statuses"></div></section><section class="ov-chart"><div class="ov-chart-heading"><h2>Request methods</h2><span>Click to inspect</span></div><div data-ov="methods"></div></section></div><div class="ov-footer"><span data-ov="coverage"></span><button data-ov="network">Open Network</button><button data-ov="logs">Open Logs</button></div>`;
+  root.innerHTML = `<div class="ov-header"><div><div class="wb-eyebrow">WORKSPACE HEALTH</div><h1>Overview</h1><p>Requests, response times, and application logs at a glance.</p></div><div class="ov-actions"><button data-ov="demo">Load overview demo</button><select data-ov="window" aria-label="Overview time window"><option value="all">All retained</option><option value="60s">Latest 60 seconds</option><option value="5m">Latest 5 minutes</option></select></div></div><div class="ov-sources"><span data-ov="network-source"></span><span data-ov="log-source"></span></div><p class="ov-scope">Retained Network & Logs data, independent of table filters. CONNECT tunnels are counted separately. Time windows end at the latest recorded event.</p><div class="ov-metrics"></div><section class="ov-contributions"><div class="ov-contribution-heading"><h2 data-ov="calendar-title">Request activity</h2><span data-ov="calendar-range"></span></div><div class="ov-calendar-scroll"><div class="ov-calendar-months" data-ov="calendar-months"></div><div class="ov-calendar-body"><div class="ov-calendar-weekdays" aria-hidden="true"><span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span></div><div class="ov-calendar-grid" data-ov="calendar" aria-label="Daily retained HTTP requests"></div></div></div><div class="ov-calendar-footer"><span data-ov="calendar-detail" role="status">Select a day to inspect its retained count.</span><div class="ov-calendar-legend" aria-label="Activity intensity from fewer to more retained requests"><span>Less</span><i data-level="0"></i><i data-level="1"></i><i data-level="2"></i><i data-level="3"></i><i data-level="4"></i><span>More</span></div></div><p class="ov-calendar-note">365 calendar days · retained HTTP requests only, not a complete recording history. Empty cells mean no retained requests. CONNECT excluded. Independent of the time filter below.</p></section><div class="ov-charts"><section class="ov-chart"><div class="ov-chart-heading"><h2>Request activity</h2><span>Requests per bucket</span></div><div data-ov="activity" class="ov-plot"></div></section><section class="ov-chart"><div class="ov-chart-heading"><h2>Response time</h2><span>Mean duration per bucket · ms</span></div><div data-ov="latency" class="ov-plot"></div></section></div><div class="ov-breakdowns"><section class="ov-chart"><div class="ov-chart-heading"><h2>HTTP status</h2><span>Click to inspect</span></div><div data-ov="statuses"></div></section><section class="ov-chart"><div class="ov-chart-heading"><h2>Request methods</h2><span>Click to inspect</span></div><div data-ov="methods"></div></section></div><div class="ov-footer"><span data-ov="coverage"></span><button data-ov="network">Open Network</button><button data-ov="logs">Open Logs</button></div>`;
   function get<T extends HTMLElement = HTMLElement>(name: string) {
     return root.querySelector<T>(`[data-ov="${name}"]`)!;
   }
@@ -49,6 +36,8 @@ export function mountOverview(root: HTMLElement, actions: Actions) {
   get("network").onclick = () => actions.network();
   get("logs").onclick = actions.logs;
   let window: OverviewWindow = "all";
+  let selectedDay = "";
+  let calendarSignature = "";
   let current: Data = {
     requests: [],
     logs: [],
@@ -64,144 +53,7 @@ export function mountOverview(root: HTMLElement, actions: Actions) {
     buckets: Bucket[],
     metric: "count" | "average",
   ) {
-    const width = Math.max(250, container.clientWidth),
-      height = 225,
-      left = 48,
-      right = 15,
-      top = 18,
-      bottom = 38;
-    const figure = svg("svg", {
-      viewBox: `0 0 ${width} ${height}`,
-      role: "img",
-      "aria-label":
-        metric === "count"
-          ? "HTTP requests over time"
-          : "Mean HTTP duration over time in milliseconds",
-    });
-    figure.append(
-      svg(
-        "title",
-        {},
-        metric === "count"
-          ? "HTTP request count per time bucket"
-          : "Mean duration per time bucket. Gaps indicate no measured requests.",
-      ),
-    );
-    const values = buckets
-      .map((b) => b[metric])
-      .filter((v): v is number => v !== null);
-    const maximum = Math.max(1, ...values),
-      ceiling =
-        metric === "count"
-          ? Math.max(1, Math.ceil(maximum))
-          : Math.max(1, Math.ceil(maximum / 10) * 10);
-    const plotWidth = width - left - right,
-      plotHeight = height - top - bottom;
-    const ticks =
-      metric === "count"
-        ? [
-            ...new Set([
-              0,
-              Math.round(ceiling / 3),
-              Math.round((ceiling * 2) / 3),
-              ceiling,
-            ]),
-          ]
-        : [0, ceiling / 3, (ceiling * 2) / 3, ceiling];
-    for (const value of ticks) {
-      const y = height - bottom - (plotHeight * value) / ceiling;
-      figure.append(
-        svg("line", {
-          x1: left,
-          x2: width - right,
-          y1: y,
-          y2: y,
-          class: "ov-grid",
-        }),
-        svg(
-          "text",
-          { x: left - 9, y: y + 4, "text-anchor": "end", class: "ov-axis" },
-          metric === "count" ? String(Math.round(value)) : value.toFixed(0),
-        ),
-      );
-    }
-    figure.append(
-      svg("text", { x: left, y: height - 4, class: "ov-axis" }, "Time"),
-      svg(
-        "text",
-        { x: 4, y: 12, class: "ov-axis" },
-        metric === "count" ? "Count" : "ms",
-      ),
-    );
-    if (!buckets.length || !buckets.some((b) => b.count > 0)) {
-      figure.append(
-        svg(
-          "text",
-          {
-            x: left + plotWidth / 2,
-            y: height / 2,
-            "text-anchor": "middle",
-            class: "ov-no-data",
-          },
-          "No HTTP data in this window",
-        ),
-      );
-      container.replaceChildren(figure);
-      return;
-    }
-    const x = (i: number) => left + ((i + 0.5) / buckets.length) * plotWidth,
-      y = (v: number) => height - bottom - (v / ceiling) * plotHeight;
-    let path = "";
-    let gap = true;
-    buckets.forEach((bucket, i) => {
-      const value = bucket[metric];
-      if (value === null) {
-        gap = true;
-        return;
-      }
-      path += `${gap ? "M" : "L"}${x(i).toFixed(2)},${y(value).toFixed(2)} `;
-      gap = false;
-    });
-    figure.append(
-      svg("path", {
-        d: path,
-        fill: "none",
-        class: metric === "count" ? "ov-line" : "ov-latency-line",
-      }),
-    );
-    buckets.forEach((bucket, i) => {
-      const value = bucket[metric];
-      if (value === null) return;
-      const point = svg("circle", {
-        cx: x(i),
-        cy: y(value),
-        r: 3,
-        class: metric === "count" ? "ov-point" : "ov-latency-point",
-      });
-      point.append(
-        svg(
-          "title",
-          {},
-          `${clock(bucket.start)}–${clock(bucket.end)}: ${value.toFixed(metric === "count" ? 0 : 1)} ${metric === "count" ? "requests" : "ms"}`,
-        ),
-      );
-      figure.append(point);
-    });
-    for (const i of [0, Math.floor(buckets.length / 2), buckets.length - 1])
-      figure.append(
-        svg(
-          "text",
-          {
-            x: i === 0 ? left : i === buckets.length - 1 ? width - right : x(i),
-            y: height - 18,
-            "text-anchor":
-              i === 0 ? "start" : i === buckets.length - 1 ? "end" : "middle",
-            class: "ov-axis",
-          },
-          clock(i === buckets.length - 1 ? buckets[i].end : buckets[i].start),
-        ),
-      );
-    container.replaceChildren(figure);
+    renderTimeSeries(container, buckets, metric);
   }
   function bars(
     container: HTMLElement,
@@ -241,7 +93,116 @@ export function mountOverview(root: HTMLElement, actions: Actions) {
       container.append(button);
     });
   }
+  function renderCalendar() {
+    const calendar = activityCalendar(current.requests);
+    const signature = JSON.stringify([
+      calendar.days.map((d) => d.count),
+      calendar.start,
+      calendar.end,
+    ]);
+    get("calendar-title").textContent =
+      `${calendar.total.toLocaleString()} retained HTTP requests in the last year`;
+    get("calendar-range").textContent = `${calendar.start} — ${calendar.end}`;
+    if (signature === calendarSignature) return;
+    calendarSignature = signature;
+    const months = get("calendar-months");
+    months.replaceChildren();
+    let previousMonth = -1;
+    for (let week = 0; week < 53; week++) {
+      const day = calendar.days[week * 7];
+      const date = new Date(day.timestamp);
+      const month = date.getMonth();
+      const label = el(
+        "span",
+        month !== previousMonth
+          ? date.toLocaleDateString("en", { month: "short" })
+          : "",
+      );
+      label.className = "ov-calendar-month";
+      if (
+        month !== previousMonth &&
+        week > 0 &&
+        week < 3 &&
+        months.firstElementChild
+      )
+        months.firstElementChild.textContent = "";
+      if (week > 50) label.textContent = "";
+      months.append(label);
+      previousMonth = month;
+    }
+    const grid = get("calendar");
+    const focused = grid.contains(document.activeElement)
+      ? (document.activeElement as HTMLButtonElement).dataset.date
+      : null;
+    grid.replaceChildren();
+    const days = calendar.days;
+    const fragment = document.createDocumentFragment();
+    const select = (key: string, count: number) => {
+      selectedDay = key;
+      get("calendar-detail").textContent =
+        `${key}: ${count.toLocaleString()} retained HTTP request${count === 1 ? "" : "s"}`;
+      grid.querySelectorAll<HTMLButtonElement>("button").forEach((b) => {
+        const selected = b.dataset.date === key;
+        b.setAttribute("aria-pressed", String(selected));
+        b.tabIndex = selected ? 0 : -1;
+      });
+    };
+    days.forEach((day) => {
+      if (!day.inRange) {
+        fragment.append(el("span", "", "ov-calendar-padding"));
+        return;
+      }
+      const button = el("button", "", "ov-day");
+      button.type = "button";
+      button.dataset.level = String(day.level);
+      button.dataset.date = day.key;
+      button.title = `${day.key}: ${day.count} retained HTTP requests`;
+      button.setAttribute("aria-label", button.title);
+      button.setAttribute("aria-pressed", String(day.key === selectedDay));
+      button.tabIndex = day.key === (selectedDay || calendar.end) ? 0 : -1;
+      button.onclick = () => select(day.key, day.count);
+      fragment.append(button);
+    });
+    grid.append(fragment);
+    grid.onkeydown = (event) => {
+      const keys: Record<string, number> = {
+        ArrowLeft: -7,
+        ArrowRight: 7,
+        ArrowUp: -1,
+        ArrowDown: 1,
+      };
+      if (!(event.key in keys)) return;
+      const target = event.target as HTMLButtonElement;
+      const buttons = [...grid.querySelectorAll<HTMLButtonElement>("button")];
+      const index = buttons.indexOf(target);
+      if (index < 0) return;
+      event.preventDefault();
+      const next =
+        buttons[
+          Math.max(0, Math.min(buttons.length - 1, index + keys[event.key]))
+        ];
+      next.focus();
+      const day = days.find((d) => d.key === next.dataset.date)!;
+      select(day.key, day.count);
+    };
+    const selected = days.find((d) => d.inRange && d.key === selectedDay);
+    if (selected) select(selected.key, selected.count);
+    else {
+      selectedDay = "";
+      const last = grid.querySelectorAll<HTMLButtonElement>("button");
+      if (last.length) last[last.length - 1].tabIndex = 0;
+      get("calendar-detail").textContent =
+        `${calendar.activeDays} active days in retained data${calendar.undated ? ` · ${calendar.undated} undated requests omitted` : ""}`;
+    }
+    if (focused) {
+      const target = [
+        ...grid.querySelectorAll<HTMLButtonElement>("button"),
+      ].find((button) => button.dataset.date === focused);
+      target?.focus({ preventScroll: true });
+    }
+  }
   function render() {
+    renderCalendar();
     const result = summarize(current.requests, current.logs, window);
     get("network-source").textContent = `Network: ${current.networkSource}`;
     get("log-source").textContent = `Logs: ${current.logSource}`;
