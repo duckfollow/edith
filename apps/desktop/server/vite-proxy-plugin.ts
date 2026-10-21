@@ -1,3 +1,4 @@
+import { openWorkspaceDatabase } from "./database.mjs";
 import { createAccounts } from "./accounts.mjs";
 import { fileURLToPath } from "node:url";
 import { createAccessMiddleware } from "./access-policy.mjs";
@@ -9,6 +10,7 @@ import { createLocalProxy } from "./local-proxy.mjs";
 export function localProxyPlugin(): Plugin {
   let gateway: ReturnType<typeof createGatewayManager>;
   let proxy: ReturnType<typeof createLocalProxy>;
+  let database: Awaited<ReturnType<typeof openWorkspaceDatabase>> | undefined;
   return {
     name: "edith-local-debug-proxy",
     async configureServer(server) {
@@ -17,9 +19,18 @@ export function localProxyPlugin(): Plugin {
       const mode = process.env.EDITH_MODE || "local";
       if (!["local", "team"].includes(mode))
         throw Error("EDITH_MODE must be local or team");
+      database = await openWorkspaceDatabase({
+        file: fileURLToPath(
+          new URL("../../../.local/edith.sqlite", import.meta.url),
+        ),
+        legacyAccounts: fileURLToPath(
+          new URL("../../../.local/accounts.json", import.meta.url),
+        ),
+      });
       const accounts =
         mode === "team"
           ? await createAccounts({
+              store: database,
               file: fileURLToPath(
                 new URL("../../../.local/accounts.json", import.meta.url),
               ),
@@ -47,6 +58,7 @@ export function localProxyPlugin(): Plugin {
       );
       proxy = createLocalProxy({ controlOrigin: `http://127.0.0.1:${port}` });
       gateway = createGatewayManager({
+        store: database,
         controlOrigin: `http://127.0.0.1:${port}`,
       });
       server.middlewares.use((req, res, next) => {
@@ -80,12 +92,17 @@ export function localProxyPlugin(): Plugin {
       });
       server.httpServer?.once("close", () => {
         void proxy.stop();
-        void gateway.stop();
+        void gateway.stop().finally(() => {
+          database?.close();
+          database = undefined;
+        });
       });
     },
     async closeBundle() {
       await proxy?.stop();
       await gateway?.stop();
+      database?.close();
+      database = undefined;
     },
   };
 }

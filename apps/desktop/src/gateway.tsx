@@ -100,11 +100,13 @@ function load(storageKey: string, port: number): Config {
 function Gateway({
   instanceId,
   initialPort,
+  savedConfig,
   onDiagram,
   command,
 }: {
   instanceId: string;
   initialPort: number;
+  savedConfig?: Config;
   onDiagram: (id: string, nodes: DiagramNode[], edges: DiagramEdge[]) => void;
   command: {
     instance: string;
@@ -115,11 +117,12 @@ function Gateway({
   } | null;
 }) {
   const storageKey = instanceId === "default" ? key : `${key}.${instanceId}`;
-  const [config, setConfig] = useState<Config>(() =>
-    load(storageKey, initialPort),
+  const [config, setConfig] = useState<Config>(
+    () => savedConfig || load(storageKey, initialPort),
   );
   const [selected, setSelected] = useState(config.routes[0]?.id);
   const [notice, setNotice] = useState("");
+  const [saving, setSaving] = useState(false);
   const [runtime, setRuntime] = useState<{
     running: boolean;
     port: number | null;
@@ -368,21 +371,44 @@ function Gateway({
         <div className="gw-save-actions">
           {" "}
           <button
-            disabled={!!error}
-            onClick={() => {
+            disabled={!!error || saving || !runtime || !access.manageGateway}
+            onClick={async () => {
+              if (!runtime || saving || !workspacePolicy.manageGateway) return;
+              setSaving(true);
               try {
-                localStorage.setItem(storageKey, JSON.stringify(config));
-                setNotice(
-                  "Configuration saved on this device. Restart Gateway to apply changes.",
+                const response = await fetch(
+                  `/__edith_gateway/config?gateway=${instanceId}`,
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      "X-Edith-Token": runtime.token,
+                    },
+                    body: JSON.stringify(config),
+                    signal: AbortSignal.timeout(5000),
+                  },
                 );
-              } catch {
+                const result = await response.json();
+                if (!response.ok)
+                  throw Error(result.error || "Unable to save Gateway");
+                try {
+                  localStorage.setItem(storageKey, JSON.stringify(config));
+                } catch {}
                 setNotice(
-                  "Cannot save in this browser. Export a copy instead.",
+                  "Saved to SQLite. Stop and start a running Gateway to apply changes.",
                 );
+              } catch (error) {
+                setNotice(
+                  error instanceof Error
+                    ? error.message
+                    : "Unable to save Gateway",
+                );
+              } finally {
+                setSaving(false);
               }
             }}
           >
-            Save setup
+            {saving ? "Saving…" : "Save setup"}
           </button>
           <button
             disabled={!!error || !access.exportData}
@@ -574,15 +600,15 @@ function Gateway({
       >
         {error ||
           notice ||
-          "Configuration is stored on this device when you save."}
+          "Save setup stores this Gateway in workspace SQLite."}
       </div>
       <details className="gw-config-help">
         <summary>How routing works</summary>
         <p>
           Routes match complete path segments; the longest prefix wins. Use View
           requests to inspect traffic in Network. Backend failures appear in
-          Logs under Gateway errors. Saving keeps your setup; restart a running
-          Gateway to apply edits.
+          Logs under Gateway errors. Saving stores your setup in SQLite; restart
+          a running Gateway to apply edits.
         </p>
         <p>
           Flow animation shows direction, not live request activity. The
@@ -620,6 +646,51 @@ function GatewayWorkspace() {
     return [{ id: "default", port: 8080 }];
   });
   const [active, setActive] = useState(profiles[0].id);
+  const [savedConfigs, setSavedConfigs] = useState<Record<string, Config>>({});
+  const [databaseReady, setDatabaseReady] = useState(false);
+  const [databaseError, setDatabaseError] = useState("");
+  useEffect(() => {
+    let disposed = false;
+    void (async () => {
+      try {
+        const response = await fetch("/__edith_gateway/configs", {
+          signal: AbortSignal.timeout(5000),
+          cache: "no-store",
+        });
+        if (!response.ok)
+          throw Error(
+            "Unable to load saved Gateways. Check login and the development server, then reload.",
+          );
+        const data = (await response.json()) as {
+          gateways: { id: string; config: Config }[];
+        };
+        if (!Array.isArray(data.gateways))
+          throw Error("Invalid Gateway database response");
+        if (disposed) return;
+        const saved = data.gateways;
+        setSavedConfigs(Object.fromEntries(saved.map((g) => [g.id, g.config])));
+        if (saved.length) {
+          setProfiles((previous) =>
+            [
+              ...saved.map((g) => ({ id: g.id, port: g.config.port })),
+              ...previous.filter((p) => !saved.some((g) => g.id === p.id)),
+            ].slice(0, 8),
+          );
+          setActive(saved[0].id);
+        }
+        setDatabaseReady(true);
+      } catch (error) {
+        if (!disposed)
+          setDatabaseError(
+            error instanceof Error ? error.message : "Database unavailable",
+          );
+      }
+    })();
+    return () => {
+      disposed = true;
+    };
+  }, []);
+
   const [diagrams, setDiagrams] = useState<
     Record<string, { nodes: DiagramNode[]; edges: DiagramEdge[] }>
   >({});
@@ -676,6 +747,12 @@ function GatewayWorkspace() {
       ) + 70;
   }
 
+  if (!databaseReady)
+    return (
+      <div className="gw-page" role="status">
+        {databaseError || "Loading saved Gateways…"}
+      </div>
+    );
   return (
     <>
       <section className="gw-instance-panel" aria-label="Gateway instances">
@@ -822,6 +899,7 @@ function GatewayWorkspace() {
           <Gateway
             instanceId={p.id}
             initialPort={p.port}
+            savedConfig={savedConfigs[p.id]}
             onDiagram={report}
             command={command}
           />

@@ -7,7 +7,7 @@ Open **Gateway** in the sidebar. The custom HTML/SVG editor runs in both browser
 3. Enter a path prefix and an HTTP/HTTPS backend URL.
 4. Choose whether to strip the prefix: `/api/users` becomes `/users` when `/api` is stripped.
 5. Use **Add route** for another backend. Drag cards to arrange them; disconnect/reconnect a route with its button or by dragging between the route and backend handles.
-6. **Save setup** persists configuration in this browser/webview's local storage. **Export JSON** downloads a versioned configuration file. Node positions are session-only. No credentials should be put in backend URLs.
+6. **Save setup** persists configuration in workspace SQLite through the development server. **Export JSON** downloads a versioned configuration file. Node positions are session-only. No credentials should be put in backend URLs.
 
 ## Start and stop
 
@@ -33,7 +33,7 @@ Click **View requests** on a selected route to open Network with Gateway and tha
 
 Use **Add Gateway** and the instance selector to create up to 8 independent Gateways. Each instance has its own port, routes, Save setup, and Start/Stop. For example, Gateway 1 can listen on 8080 and Gateway 2 on 8081. Both can forward to the same backend. Choose unique listener ports; forwarding between running Gateway listeners is rejected to avoid cycles. Stopping one listener leaves the others running.
 
-Instance lists and explicitly saved setups are retained in local storage. Existing single-Gateway setup is retained as Gateway 1. Switching instances keeps unsaved drafts during the current page session; save each setup before reloading. Active listeners continue when switching pages. Restarting EDITH stops all listeners and requires explicit Start again.
+Saved setups load from workspace SQLite. Existing browser profiles/configurations remain available as drafts when not already saved in the DB; click Save setup to migrate each one. See [database migration](database.md). Switching instances keeps unsaved drafts during the current page session; save each setup before reloading. Active listeners continue when switching pages. Restarting EDITH stops all listeners and requires explicit Start again.
 
 Network offers an instance filter as well as route filter; **View requests** selects both. Logs identify the listener port in each Gateway error's source. The shared request/error buffers retain up to 256 records each across all instances.
 

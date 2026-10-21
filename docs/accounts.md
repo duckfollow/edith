@@ -72,9 +72,9 @@ Account control รวม initials, username และ role ไว้ปุ่�
 
 ## การเก็บข้อมูลและ session
 
-- Accounts บันทึกที่ `.local/accounts.json` ของ repository ซึ่งอยู่ใน `.gitignore` และ Vite ปฏิเสธการ serve ไฟล์ภายใน `.local`
+- Accounts บันทึกใน SQLite `.local/edith.sqlite` ของ repository ซึ่งอยู่ใน `.gitignore` และ Vite ปฏิเสธการ serve ไฟล์ภายใน `.local` ไฟล์ accounts.json เดิมย้ายแบบครั้งเดียวโดยไม่ลบต้นฉบับ ดู [Database และ migration](database.md)
 - รหัสผ่านเก็บเฉพาะ scrypt hash และ salt สุ่มแยกแต่ละบัญชี ไม่เก็บ plaintext
-- เขียนไฟล์ผ่าน temporary file และ atomic rename; permission ไฟล์ `0600`, directory ที่สร้างใหม่ `0700` การคุ้มครอง ACL บน Windows ต้องพิจารณาตาม environment
+- บันทึกบัญชีภายใน SQLite transaction; permission DB file `0600`, directory ที่สร้างใหม่ `0700` การคุ้มครอง ACL บน Windows ต้องพิจารณาตาม environment
 - Session token สุ่ม 256 บิต เก็บ digest ในหน่วยความจำ server มีอายุ 8 ชั่วโมง สูงสุด 1,024 sessions
 - Cookie ใช้ HttpOnly, SameSite=Strict, Path=/ และ Max-Age; Secure ถูกตั้งเมื่อใช้ HTTPS control origin แต่ development ปัจจุบันใช้ loopback HTTP
 - Logout ลบ session ฝั่ง server และ cookie
@@ -110,4 +110,4 @@ Protected development API จะตอบ 401 หากไม่มี session �
 
 ## ตรวจสอบ
 
-ชุดทดสอบ desktop รวมผ่าน 42 รายการ โดย account tests ครอบคลุม first-owner setup, ไม่เก็บ plaintext, cookie attributes, login, session role policy, ข้ามสิทธิ์เรียก account API ไม่ได้, body/token filtering, role/disable revocation, last Admin, foreign-origin rejection, logout, restart และ corrupt-store failure พร้อม frontend build ผ่าน
+ชุดทดสอบ desktop รวมล่าสุดผ่าน 46 รายการ โดย account tests ครอบคลุม first-owner setup, ไม่เก็บ plaintext, cookie attributes, login, session role policy, ข้ามสิทธิ์เรียก account API ไม่ได้, body/token filtering, role/disable revocation, last Admin, foreign-origin rejection, logout, restart และ corrupt-store failure พร้อม frontend build ผ่าน

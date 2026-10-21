@@ -51,6 +51,8 @@ Latest development notes: [20–21 October 2026 updates](docs/updates-2026-10-21
 
 Implemented:
 
+- SQLite persistence for accounts and saved Gateway configurations, with transactional legacy-account migration. See [database storage and migration](docs/database.md).
+
 - Optional Team mode with first-Admin setup, Login/Logout, account creation, role changes, account deactivation, and session revocation.
 - Account management with account totals, active/Admin counts, username search, role filters, and an Add account panel. A unified top bar shows the workspace and a single account identity; click it to open Management.
 
@@ -136,7 +138,7 @@ In **Management**, Admins can search/filter accounts, add users, change roles, a
 
 The top bar groups workspace context on the left and processing/account information on the right. The account control combines initials, username, and role without duplicate badges; click it to open Management. Local mode shows **Local owner** instead of a signed-in username.
 
-Accounts are stored in ignored `.local/accounts.json`; sessions expire after 8 hours and reset when the server restarts. Do not commit the account file or setup token. Team mode currently remains loopback-only development functionality, with no per-Gateway permissions, audit logs, or password recovery yet. See [the account guide](docs/accounts.md) for details and returning to Local mode.
+Accounts and saved Gateway setups are stored in ignored `.local/edith.sqlite` (SQLite); legacy accounts.json is migrated without deleting its source; sessions expire after 8 hours and reset when the server restarts. Do not commit the account file or setup token. Team mode currently remains loopback-only development functionality, with no per-Gateway permissions, audit logs, or password recovery yet. See [the account guide](docs/accounts.md) for details and returning to Local mode.
 
 ### Desktop development
 

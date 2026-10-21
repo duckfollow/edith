@@ -82,3 +82,7 @@ The desktop uses shared `--gh-*` dark theme tokens declared in `src/styles.css` 
 ## System Monitor
 
 See [System Monitor](system-monitor.md) for CPU/RAM semantics and sampling lifecycle. The desktop now includes a native `sysinfo` command; native CPU/memory tests compile and pass on the current macOS machine. The development server has a Node OS provider for the browser preview. This newer validation supersedes the earlier missing-Cargo note for this command only; Windows/Linux and interface-capture behavior remain unverified.
+
+## SQLite storage
+
+The development plugin opens `.local/edith.sqlite` automatically using Node built-in `node:sqlite` (Node 22.18+ / 24+). No database server or new npm dependency is needed. Accounts and explicitly saved Gateway setups persist; sessions and capture history remain in memory. Stop the server before filesystem backups. See [database setup, migration and backup](database.md).

@@ -18,6 +18,7 @@ const publicUser = ({ id, username, role, disabled }) => ({
 });
 export async function createAccounts({
   file,
+  store,
   controlOrigin = "http://127.0.0.1:1420",
   setupToken = randomBytes(24).toString("hex"),
   now = Date.now,
@@ -33,7 +34,12 @@ export async function createAccounts({
     attempts = new Map();
   let queue = Promise.resolve();
   try {
-    const saved = JSON.parse(await readFile(file, "utf8"));
+    const saved = store
+      ? { version: 1, users: store.loadUsers() }
+      : JSON.parse(await readFile(file, "utf8"));
+    if (store && !saved.users.length) saved.users = null;
+    if (store && saved.users === null)
+      throw Object.assign(Error("Empty database"), { code: "ENOENT" });
     if (
       saved.version !== 1 ||
       !Array.isArray(saved.users) ||
@@ -52,7 +58,7 @@ export async function createAccounts({
     )
       throw Error("Invalid accounts store");
     users = saved.users;
-    await chmod(file, 0o600);
+    if (!store) await chmod(file, 0o600);
   } catch (e) {
     if (e.code !== "ENOENT") throw e;
   }
@@ -63,6 +69,11 @@ export async function createAccounts({
       `localhost:${origin.port}`,
     ]);
   async function persist(next) {
+    if (store) {
+      store.saveUsers(next);
+      users = next;
+      return;
+    }
     await mkdir(dirname(file), { recursive: true, mode: 0o700 });
     const temp = file + ".tmp";
     await writeFile(temp, JSON.stringify({ version: 1, users: next }), {

@@ -1,6 +1,7 @@
-import { createGateway } from "./gateway.mjs";
+import { createGateway, validateGateway } from "./gateway.mjs";
 export function createGatewayManager({
   controlOrigin = "http://127.0.0.1:1420",
+  store,
 } = {}) {
   const instances = new Map(),
     records = [],
@@ -77,6 +78,46 @@ export function createGatewayManager({
       res.writeHead(403);
       res.end();
       return;
+    }
+    if (
+      url.pathname === "/__edith_gateway/configs" ||
+      url.pathname === "/__edith_gateway/config"
+    ) {
+      const send = (status, data) => {
+        res.writeHead(status, {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+        });
+        res.end(JSON.stringify(data));
+      };
+      if (!store) return send(503, { error: "Database unavailable" });
+      if (req.method === "GET" && url.pathname.endsWith("/configs"))
+        return send(200, { gateways: store.loadGateways() });
+      if (req.method !== "POST" || !url.pathname.endsWith("/config"))
+        return send(405, { error: "Method not allowed" });
+      try {
+        const id = url.searchParams.get("gateway") || "default";
+        if (req.headers["x-edith-token"] !== get(id).snapshot().token)
+          return send(403, { error: "Invalid control token" });
+        if (!req.headers["content-type"]?.startsWith("application/json"))
+          return send(415, { error: "JSON required" });
+        let text = "";
+        for await (const chunk of req) {
+          text += chunk;
+          if (Buffer.byteLength(text) > 32768)
+            return send(413, { error: "Configuration too large" });
+        }
+        const input = JSON.parse(text);
+        const validated = validateGateway(input, Number(origin.port));
+        store.saveGateway(id, { version: 1, ...validated });
+        return send(200, { ok: true });
+      } catch (error) {
+        return send(400, {
+          error: error.code?.startsWith("ERR_SQLITE")
+            ? "Unable to save Gateway. Check for a duplicate port."
+            : error.message,
+        });
+      }
     }
     if (url.pathname === "/__edith_gateway/events" && req.method === "GET") {
       const after = Number(url.searchParams.get("after") || 0);
