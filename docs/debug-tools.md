@@ -1,6 +1,6 @@
 # EDITH Debug Tools
 
-EDITH now has a desktop workbench with Overview, Network, Logs, Storage, and Packets tools. See [Overview graphs and metric definitions](overview.md). The interaction model is inspired by [Flipper](https://github.com/facebook/flipper): choose a tool, filter records, and inspect a selected item. EDITH is not a Flipper-compatible plugin host, and does not reuse its SDK or connect to devices yet.
+EDITH now has a desktop workbench with Overview, Gateway, System Monitor, Network, Logs, Storage, and Packets tools. See [Overview graphs and metric definitions](overview.md). The interaction model is inspired by [Flipper](https://github.com/facebook/flipper): choose a tool, filter records, and inspect a selected item. EDITH is not a Flipper-compatible plugin host, and does not reuse its SDK or connect to devices yet.
 
 ## Capability matrix
 
@@ -48,3 +48,19 @@ A future live integration needs an explicit transport and protocol: app identity
 ## Verification
 
 Frontend TypeScript and production build pass. Model and loopback proxy integration tests cover retention, filters, HAR validation, credential masking, mixed log formats, JSON validation, and special storage keys. Browser visual/interaction verification remains unavailable after the previous browser permission rejection. Native build/interface discovery remain unverified because Rust/Cargo is absent. No native capture capability was added by this change.
+
+## Network activity layout
+
+Network Inspector places captured traffic first. A summary row shows retained HTTP requests, failed/4xx/5xx requests, average duration, and the selected source. CONNECT tunnels are excluded from these summary metrics. These values describe the retained source/route/instance selection before method, status, or text filters; they are not lifetime counters. Duration semantics depend on the source, including SDK fetch-to-headers timing.
+
+The search field sits above the source and request filters. Gateway adds instance and route selectors. The table retains method, status, URL, duration, and size, with a source label on each request. The inspector sits alongside the table on wider screens and below it on narrower screens.
+
+The HTTP proxy controls remain available. Port, setup guidance, and the sample curl command are inside **Connection settings & example request**. Expanding this section does not start the proxy; **Start proxy** is still an explicit action. This layout change does not alter forwarding, credential masking, import/export, or capture limits.
+
+## Packet sources panel
+
+Packets has a contextual **Packet sources** panel instead of another EDITH logo and Local Workspace header. The app's main sidebar remains the only application branding/navigation area.
+
+The panel contains **All traffic**, interface discovery/refresh, and **Sample network**. Browser preview explains that native interface discovery requires the desktop app. Selecting an interface does not start real capture. The page title is **Packets**, with the **PACKET EXPLORER** label to distinguish sample transport data from Network Inspector's HTTP requests.
+
+Sample start/stop, display pause, filters, JSON export, and interface discovery retain their existing behavior. The contextual panel remains hidden at the existing narrow-screen breakpoint.

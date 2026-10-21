@@ -320,6 +320,13 @@ const network = buildTool(
   "Import HAR",
 );
 tableHead(network, ["METHOD", "STATUS", "REQUEST", "DURATION", "SIZE"]);
+within(network, ".wb-eyebrow").textContent = "NETWORK ACTIVITY";
+within<HTMLInputElement>(network, 'input[type="search"]').placeholder =
+  "Search URL, method, headers or body…";
+const networkMetrics = node("div", "", "network-metrics");
+networkMetrics.setAttribute("aria-label", "Retained traffic summary");
+within(network, ".wb-toolbar").before(networkMetrics);
+
 let requests: HttpEntry[] = [],
   httpSelected: number | null = null,
   httpQuery = "",
@@ -577,6 +584,26 @@ function updateOverview() {
 }
 function renderHttp() {
   updateOverview();
+  const entries = visibleRequests().filter(
+    (e) => e.captureKind !== "tunnel" && e.method !== "CONNECT",
+  );
+  const failed = entries.filter((e) => !e.status || e.status >= 400).length;
+  const average = entries.length
+    ? entries.reduce((sum, e) => sum + e.duration, 0) / entries.length
+    : null;
+  networkMetrics.replaceChildren(
+    ...[
+      ["Retained requests", entries.length.toLocaleString()],
+      ["Failed / 4xx / 5xx", failed.toLocaleString()],
+      ["Average duration", average === null ? "—" : `${average.toFixed(0)} ms`],
+      ["Source", networkLabel()],
+    ].map(([label, value]) => {
+      const card = node("div", "", "network-metric");
+      card.append(node("span", label), node("strong", value));
+      return card;
+    }),
+  );
+
   gatewayRouteSelect.hidden = !gatewayView;
   gatewayInstanceSelect.hidden = !gatewayView;
   setSource(

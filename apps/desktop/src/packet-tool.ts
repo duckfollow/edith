@@ -16,18 +16,16 @@ interface NetworkInterface {
 }
 export function mountPacketTool(root: HTMLElement) {
   root.innerHTML = `
-  <aside class="sidebar">
-    <div class="brand"><span class="brand-mark">E</span> EDITH <span class="version">α</span></div>
-    <div class="workspace"><span class="dot"></span> LOCAL WORKSPACE</div>
-    <p class="section-label">NETWORK EXPLORER</p>
+  <aside class="sidebar" aria-label="Packet sources">
+    <div class="packet-source-title">${iconMarkup("network")}<div><h2>Packet sources</h2><p>Select traffic to explore</p></div></div>
+    <p class="section-label">TRAFFIC</p>
     <button class="nav-item active" id="all-traffic">${iconMarkup("arrows")} <span>All traffic</span><span class="badge" id="side-count">0</span></button>
     <div class="source-heading"><p class="section-label">INTERFACES</p><button id="refresh" aria-label="Refresh interfaces">${iconMarkup("refresh")}</button></div>
     <div id="interfaces" aria-live="polite"></div>
     <button class="sample-source" id="sample-source"><span class="dot amber"></span><span>Sample network<small>Generated packets · sample0</small></span></button>
-    <div class="sidebar-bottom"><span class="shield">${iconMarkup("shield")}</span><div>Private by design<small>All data stays on this device</small></div></div>
   </aside>
   <main>
-    <header class="topbar"><div><div class="eyebrow">YOUR MACHINE. YOUR TRAFFIC.</div><h1>Network activity</h1></div><div class="header-actions"><button id="export">${iconMarkup("download")} Export JSON</button><button id="start" class="primary">${iconMarkup("play")} Start sample</button></div></header>
+    <header class="topbar"><div><div class="eyebrow">PACKET EXPLORER</div><h1>Packets</h1></div><div class="header-actions"><button id="export">${iconMarkup("download")} Export JSON</button><button id="start" class="primary">${iconMarkup("play")} Start sample</button></div></header>
     <div class="notice"><span class="notice-icon">${iconMarkup("info")}</span><div><strong>Sample mode</strong><span>Explore generated traffic. Real network capture is not connected in this milestone.</span></div></div>
     <section class="stats" aria-label="Session traffic totals">
       <div><span>${iconMarkup("arrowDown")} Received</span><strong id="received">0 B</strong><small>Sample session total</small></div>
