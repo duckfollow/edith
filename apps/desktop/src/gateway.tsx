@@ -1,3 +1,4 @@
+import { workspacePolicy } from "./access-policy";
 import { useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -125,6 +126,12 @@ function Gateway({
     token: string;
   } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [access, setAccess] = useState(workspacePolicy);
+  useEffect(() => {
+    const update = () => setAccess(workspacePolicy);
+    window.addEventListener("edith-access-policy", update);
+    return () => window.removeEventListener("edith-access-policy", update);
+  }, []);
   const [previewFlow, setPreviewFlow] = useState(false);
   useEffect(() => {
     let disposed = false;
@@ -252,7 +259,11 @@ function Gateway({
           label: busy ? "Please wait…" : runtime?.running ? "Stop" : "Start",
           tone: busy ? "busy" : runtime?.running ? "stop" : "start",
           icon: busy ? "refresh" : runtime?.running ? "stop" : "play",
-          disabled: !runtime || busy || (!runtime.running && !!error),
+          disabled:
+            !access.manageGateway ||
+            !runtime ||
+            busy ||
+            (!runtime.running && !!error),
           title: error || "Start or stop this Gateway",
           run: () => void control(runtime?.running ? "stop" : "start"),
         },
@@ -303,7 +314,7 @@ function Gateway({
   ]);
   useEffect(() => {
     onDiagram(instanceId, nodes, edges);
-  }, [config, selected, runtime, busy, previewFlow, onDiagram]);
+  }, [config, selected, runtime, busy, previewFlow, access, onDiagram]);
   const prefix =
     route?.path === "/" ? "" : (route?.path || "").replace(/\/$/, "");
   const exampleInput = `${prefix}/users`;
@@ -374,8 +385,9 @@ function Gateway({
             Save setup
           </button>
           <button
-            disabled={!!error}
+            disabled={!!error || !access.exportData}
             onClick={() => {
+              if (!workspacePolicy.exportData) return;
               const url = URL.createObjectURL(
                 new Blob([JSON.stringify(config, null, 2)], {
                   type: "application/json",

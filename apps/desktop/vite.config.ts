@@ -13,6 +13,7 @@ export default defineConfig(async () => ({
   plugins: [localProxyPlugin()],
   // 2. tauri expects a fixed port, fail if that port is not available
   server: {
+    fs: { deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "**/.local/**"] },
     port: 1420,
     strictPort: true,
     host: host || false,

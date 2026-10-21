@@ -2,9 +2,11 @@
 
 A local-first, open-source desktop debugging workbench for **macOS, Windows, and Linux**.
 
-EDITH aims to make the traffic entering and leaving your machine understandable: select an interface, start capture, search packets, and inspect endpoints. No account or central server required.
+EDITH brings local Gateway routing, HTTP inspection, logs, and CPU/RAM monitoring into one workbench. Local mode requires no account; optional Team mode adds login and account management in the development runtime. OS packet capture is still in development.
 
 ## Screenshots
+
+Development screenshots; newer Network, per-core CPU cards, account management, and top-bar layouts may differ.
 
 ### Overview
 
@@ -41,11 +43,16 @@ Filter captured requests by Gateway, route, status, and method.
 
 ## Current status
 
+Access control supports a [local workspace policy](docs/access-control.md) and optional [Team accounts with session-based roles](docs/accounts.md). Both currently apply to the development runtime.
+
 Latest development notes: [20–21 October 2026 updates](docs/updates-2026-10-21.md).
 
 **Early development — file-based debugging tools with a sample packet explorer. A live local HTTP proxy is available in the development runtime. A JavaScript SDK connects fetch, logs, and errors in development. OS packet capture is not implemented.**
 
 Implemented:
+
+- Optional Team mode with first-Admin setup, Login/Logout, account creation, role changes, account deactivation, and session revocation.
+- Account management with account totals, active/Admin counts, username search, role filters, and an Add account panel. A unified top bar shows the workspace and a single account identity; click it to open Management.
 
 - Gateway setup editor with a custom HTML/SVG canvas: route/backend connections, local save, and JSON export. Run up to 8 loopback HTTP Gateways with independent routes and Start/Stop in development; inspect traffic by Gateway and route.
 
@@ -68,9 +75,11 @@ Implemented:
 
 Next: package the local proxy for desktop releases, a restricted platform capture helper, real packet parsing, robust capture lifecycle, PCAP files, and platform release validation. Encrypted traffic will not automatically expose HTTPS content. Per-app attribution is a later platform-specific feature.
 
-See [System Monitor](docs/system-monitor.md), [Overview and graphs](docs/overview.md), [SDK setup and demo](docs/sdk.md), [live proxy setup](docs/local-proxy.md), [debug tools and sample files](docs/debug-tools.md), [product scope and architecture](docs/network-monitor.md) and [development setup](docs/development.md).
+See [Accounts and Team mode](docs/accounts.md), [Gateway](docs/gateway.md), [System Monitor](docs/system-monitor.md), [Overview and graphs](docs/overview.md), [SDK setup and demo](docs/sdk.md), [live proxy setup](docs/local-proxy.md), [debug tools and sample files](docs/debug-tools.md), [product scope and architecture](docs/network-monitor.md) and [development setup](docs/development.md).
 
 ## Running EDITH
+
+Optional [Team mode and account management](docs/accounts.md): run with `EDITH_MODE=team` to create the first Admin and manage user roles. Local mode still works without login.
 
 Run all commands below from the repository root. Use **Node.js 22.18+ or 24+** and npm. The same npm commands work on macOS, Windows, and Linux.
 
@@ -103,6 +112,31 @@ Open **http://127.0.0.1:1420/** and keep the terminal running. Stop it with **Ct
 - **Packets:** **Start sample** generates sample packets. Live OS packet capture is not implemented.
 
 The preview listens on loopback. If port `1420` is already in use, stop the existing EDITH preview before starting another one.
+
+### Team mode: accounts and roles
+
+Stop any existing EDITH development server before switching modes.
+
+macOS/Linux:
+
+```sh
+EDITH_MODE=team npm run dev:web --workspace appsdesktop
+```
+
+Windows PowerShell:
+
+```powershell
+$env:EDITH_MODE = 'team'
+npm run dev:web --workspace appsdesktop
+```
+
+Open `http://127.0.0.1:1420/`. On the first run, use the **EDITH first-owner setup token** printed in the server terminal to create an Admin. Usernames require 3–64 allowed characters and passwords require 12–256 characters. Once initialized, sign in with an existing account; public registration is not available.
+
+In **Management**, Admins can search/filter accounts, add users, change roles, and disable accounts. **Apply** becomes available when a row changes. Role or Active-state updates revoke that account's sessions. The last active Admin cannot be disabled or demoted.
+
+The top bar groups workspace context on the left and processing/account information on the right. The account control combines initials, username, and role without duplicate badges; click it to open Management. Local mode shows **Local owner** instead of a signed-in username.
+
+Accounts are stored in ignored `.local/accounts.json`; sessions expire after 8 hours and reset when the server restarts. Do not commit the account file or setup token. Team mode currently remains loopback-only development functionality, with no per-Gateway permissions, audit logs, or password recovery yet. See [the account guide](docs/accounts.md) for details and returning to Local mode.
 
 ### Desktop development
 

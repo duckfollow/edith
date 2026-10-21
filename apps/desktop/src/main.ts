@@ -1,3 +1,5 @@
+import { mountAccounts } from "./accounts";
+import { workspacePolicy, loadAccessPolicy } from "./access-policy";
 import { mountGateway } from "./gateway";
 import { mountSystemMonitor } from "./system-monitor";
 import { mountOverview } from "./overview";
@@ -24,6 +26,7 @@ import "./workbench.css";
 import "./dropdown.css";
 
 type Tool =
+  | "management"
   | "gateway"
   | "system"
   | "overview"
@@ -79,6 +82,12 @@ const plugins: Array<{
     name: "Packets",
     description: "Explore transport-level packet metadata",
   },
+  {
+    id: "management",
+    icon: "shield",
+    name: "Management",
+    description: "Workspace accounts and access",
+  },
 ];
 const root = document.querySelector<HTMLElement>("#app")!;
 root.innerHTML = `<div class="wb-shell">
@@ -88,8 +97,9 @@ root.innerHTML = `<div class="wb-shell">
     <div class="wb-sidebar-note"><strong>Bring your own data</strong><p>Open a HAR, log, or JSON snapshot. Files are processed on this device.</p><button id="wb-guide">Connection guide ${iconMarkup("external")}</button></div>
     <div class="wb-bottom"><span class="wb-dot"></span> Offline workspace <small>Built-in tools · v0.1 alpha</small></div>
   </aside>
-  <div class="wb-workspace"><header class="wb-top"><div class="wb-breadcrumb">Local workspace <span>/</span> <strong id="wb-tool-name">Network</strong></div><span class="wb-local">${iconMarkup("shield")} Local processing</span></header>
+  <div class="wb-workspace"><header class="wb-top"><div class="wb-breadcrumb"><em id="wb-workspace-name">Local workspace</em><span>/</span> <strong id="wb-tool-name">Network</strong></div><div class="wb-top-actions"><span class="wb-local">${iconMarkup("shield")} Local processing</span><div id="wb-account-slot"></div></div></header>
   <div id="wb-content">
+    <section id="tool-management" class="wb-tool" aria-label="Account management" hidden></section>
     <section id="tool-overview" class="wb-tool" aria-label="Workspace overview"></section>
     <section id="tool-gateway" class="wb-tool" aria-label="Gateway setup" hidden></section>
     <section id="tool-system" class="wb-tool" aria-label="System Monitor" hidden></section>
@@ -140,15 +150,17 @@ plugins.forEach((plugin) => {
     node("span", plugin.name),
     node(
       "small",
-      plugin.id === "overview"
-        ? "SUMMARY"
-        : plugin.id === "gateway"
-          ? "SETUP"
-          : plugin.id === "packets"
-            ? "SAMPLE"
-            : ["network", "logs", "system"].includes(plugin.id)
-              ? "LIVE"
-              : "FILE",
+      plugin.id === "management"
+        ? "ACCESS"
+        : plugin.id === "overview"
+          ? "SUMMARY"
+          : plugin.id === "gateway"
+            ? "SETUP"
+            : plugin.id === "packets"
+              ? "SAMPLE"
+              : ["network", "logs", "system"].includes(plugin.id)
+                ? "LIVE"
+                : "FILE",
     ),
   );
   nav.append(button);
@@ -177,6 +189,10 @@ get("#wb-guide").onclick = () =>
 get("#wb-close-guide").onclick = () =>
   get<HTMLDialogElement>("#wb-guide-dialog").close();
 function download(filename: string, value: unknown) {
+  if (!workspacePolicy.exportData) {
+    toast("Export is disabled by workspace policy.");
+    return;
+  }
   const blob = new Blob([JSON.stringify(value, null, 2)], {
     type: "application/json",
   });
@@ -464,6 +480,10 @@ function showHttp(entry: HttpEntry) {
   const toggle = action(
     reveal ? "Hide credentials" : "Reveal credentials",
     () => {
+      if (!workspacePolicy.revealCredentials) {
+        toast("Your workspace role cannot reveal credentials.");
+        return;
+      }
       reveal = !reveal;
       renderHttp();
     },
@@ -514,7 +534,11 @@ function showHttp(entry: HttpEntry) {
         headers.map((h) => `${h.name}: ${h.value}`).join("\n"),
       ),
     );
-    const body = request ? entry.requestBody : entry.responseBody;
+    const body = workspacePolicy.viewBodies
+      ? request
+        ? entry.requestBody
+        : entry.responseBody
+      : "Body hidden by workspace policy";
     if (request && entry.requestEncoding)
       panel.append(
         node(
@@ -1282,3 +1306,48 @@ window.addEventListener("edith-gateway-view", (event) => {
   selectTool("network");
   renderHttp();
 });
+
+void loadAccessPolicy().then((policy) => {
+  window.dispatchEvent(new Event("edith-access-policy"));
+  get("#wb-workspace-name").textContent =
+    policy.mode === "team" ? "Team workspace" : "Local workspace";
+  const account = action(
+    "",
+    () => selectTool("management"),
+    "wb-account-control",
+  );
+  const name =
+    policy.username ||
+    (policy.role === "unavailable" ? "Access unavailable" : "Local owner");
+  const role =
+    policy.role === "unavailable"
+      ? "Offline"
+      : policy.role[0].toUpperCase() + policy.role.slice(1);
+  account.setAttribute(
+    "aria-label",
+    `${name}, ${role}. Open account management`,
+  );
+  account.title =
+    policy.mode === "team"
+      ? "Manage your workspace account"
+      : "Local workspace access settings";
+  const avatar = node(
+    "span",
+    policy.username ? name.slice(0, 2).toUpperCase() : "E",
+    "wb-account-avatar",
+  );
+  const identity = node("span", "", "wb-account-identity");
+  identity.append(node("strong", name), node("small", role));
+  account.append(avatar, identity, icon("arrowDown"));
+  get("#wb-account-slot").replaceChildren(account);
+  for (const button of root.querySelectorAll<HTMLButtonElement>(
+    '[data-action="export"]',
+  )) {
+    button.disabled = !policy.exportData;
+    if (!policy.exportData)
+      button.title = "Export disabled by workspace policy";
+  }
+  renderHttp();
+});
+
+mountAccounts(get("#tool-management"));

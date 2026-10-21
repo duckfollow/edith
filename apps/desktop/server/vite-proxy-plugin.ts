@@ -1,3 +1,6 @@
+import { createAccounts } from "./accounts.mjs";
+import { fileURLToPath } from "node:url";
+import { createAccessMiddleware } from "./access-policy.mjs";
 import { createGatewayManager } from "./gateway-manager.mjs";
 import { createSystemMonitor } from "./system-monitor.mjs";
 import type { Plugin } from "vite";
@@ -8,8 +11,40 @@ export function localProxyPlugin(): Plugin {
   let proxy: ReturnType<typeof createLocalProxy>;
   return {
     name: "edith-local-debug-proxy",
-    configureServer(server) {
+    async configureServer(server) {
       const port = server.config.server.port || 1420;
+      // @ts-expect-error Node environment configuration
+      const mode = process.env.EDITH_MODE || "local";
+      if (!["local", "team"].includes(mode))
+        throw Error("EDITH_MODE must be local or team");
+      const accounts =
+        mode === "team"
+          ? await createAccounts({
+              file: fileURLToPath(
+                new URL("../../../.local/accounts.json", import.meta.url),
+              ),
+              controlOrigin: `http://127.0.0.1:${port}`,
+              // @ts-expect-error Node environment configuration
+              setupToken: process.env.EDITH_SETUP_TOKEN || undefined,
+            })
+          : null;
+      if (accounts && !accounts.initialized())
+        server.config.logger.info(
+          `EDITH first-owner setup token: ${accounts.setupToken}`,
+        );
+      if (accounts)
+        server.middlewares.use((req, res, next) => {
+          void accounts.middleware(req, res, next).catch(() => {
+            res.statusCode = 500;
+            res.end("Account service unavailable");
+          });
+        });
+      server.middlewares.use(
+        createAccessMiddleware({
+          controlOrigin: `http://127.0.0.1:${port}`,
+          identity: accounts?.identity,
+        }),
+      );
       proxy = createLocalProxy({ controlOrigin: `http://127.0.0.1:${port}` });
       gateway = createGatewayManager({
         controlOrigin: `http://127.0.0.1:${port}`,
