@@ -42,3 +42,9 @@ Network offers an instance filter as well as route filter; **View requests** sel
 All Gateway instances appear together in one canvas, grouped vertically. Click a listener, route, or backend card to select that Gateway; the setup controls below the map switch to that instance and selected route. The instance selector remains available for keyboard access. Drag cards to arrange them, pan the background, and use Fit to show the full map. Card positions remain session-only. Connections are restricted to a route and its matching backend within the same instance. Running and preview animations are independent for each instance.
 
 Listener cards contain Start/Stop and Preview flow controls with their own running/stopped state. These controls do not start dragging a card; drag the card heading instead. Route/backend cards and connector ports have self-contained styles in the shared canvas. Listener cards are taller to fit controls, and connection paths use their actual center.
+
+The All Gateways map fits all nodes automatically on first display, when adding/removing nodes, and when the canvas changes size or becomes visible again. Normal status polling does not reset the viewport, and dragging cards does not trigger auto-fit. Padding reserves room for zoom controls. Manual zoom/pan and the Fit button remain available.
+
+## Security rules
+
+Each Gateway has optional method, request-body-size and per-peer rate-limit rules. Configure them in **Security rules**, Save, then Stop/Start to apply. Blocked matched requests appear in Network with a reason and Logs as WARN. Security is off by default and never changes the system firewall. See [Gateway Security](gateway-security.md) for buffering behavior, defaults and limits.

@@ -51,6 +51,8 @@ Latest development notes: [20–21 October 2026 updates](docs/updates-2026-10-21
 
 Implemented:
 
+- Per-Gateway [Security rules](docs/gateway-security.md): method allow list, bounded request bodies, and per-IP rate limiting, with blocked requests in Network/Logs. Opt-in and saved in SQLite.
+
 - SQLite persistence for accounts and saved Gateway configurations, with transactional legacy-account migration. See [database storage and migration](docs/database.md).
 
 - Optional Team mode with first-Admin setup, Login/Logout, account creation, role changes, account deactivation, and session revocation.
@@ -81,7 +83,29 @@ See [Accounts and Team mode](docs/accounts.md), [Gateway](docs/gateway.md), [Sys
 
 ## Running EDITH
 
-Optional [Team mode and account management](docs/accounts.md): run with `EDITH_MODE=team` to create the first Admin and manage user roles. Local mode still works without login.
+Install dependencies once, then start from the repository root:
+
+```sh
+npm ci
+npm run dev
+```
+
+Open **http://127.0.0.1:1420/**. This starts the web app in Local mode without login or Rust. Keep the terminal running and stop with **Ctrl+C**.
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Web app, Local mode |
+| `npm run dev:team` | Web app, Team mode with accounts/login |
+| `npm run dev:desktop` | Native Tauri app (Rust and platform dependencies required) |
+| `npm run dev:api` | Example backend at `127.0.0.1:3000`, run in a second terminal |
+| `npm run build:web` | Build frontend files |
+| `npm run build:desktop` | Build native application |
+| `npm run check` | TypeScript checks |
+| `npm run test:desktop` | Desktop tests |
+
+These shortcuts work on macOS, Windows, and Linux without shell-specific environment syntax. `dev` and `dev:team` select their mode explicitly; stop one before starting the other on port 1420. Team setup and account storage are described in [Accounts](docs/accounts.md) and [Database](docs/database.md).
+
+The former root `npm run dev` command is retained as `npm run dev:legacy` for all legacy workspaces. Existing workspace commands below remain available; the default `dev` now starts EDITH only.
 
 Run all commands below from the repository root. Use **Node.js 22.18+ or 24+** and npm. The same npm commands work on macOS, Windows, and Linux.
 
@@ -291,7 +315,7 @@ npm run build:web --workspace appsdesktop
 | `docs`                                   | Product direction, architecture, setup, limitations                            |
 | `apps/web`, `apps/api`, `packages/types` | Existing media-platform packages; retained, not needed by the network explorer |
 
-The previous media-storage implementation is retained while the desktop app changes direction. Root-wide build/dev commands may still start those legacy packages; use the desktop-specific commands above.
+The previous media-storage implementation is retained while the desktop app changes direction. Root-wide build/lint commands may still include legacy packages. The default dev command starts EDITH only; use dev:legacy explicitly for the old Turbo workflow.
 
 ## License
 

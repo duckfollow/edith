@@ -111,3 +111,7 @@ Protected development API จะตอบ 401 หากไม่มี session �
 ## ตรวจสอบ
 
 ชุดทดสอบ desktop รวมล่าสุดผ่าน 46 รายการ โดย account tests ครอบคลุม first-owner setup, ไม่เก็บ plaintext, cookie attributes, login, session role policy, ข้ามสิทธิ์เรียก account API ไม่ได้, body/token filtering, role/disable revocation, last Admin, foreign-origin rejection, logout, restart และ corrupt-store failure พร้อม frontend build ผ่าน
+
+## Root command shortcuts
+
+From the repository root use `npm run dev` for Local web mode, `npm run dev:team` for Team web mode, `npm run dev:desktop` for native development, and `npm run dev:api` for the example backend in a second terminal. No shell-specific environment syntax is needed for these commands. Stop the current server before changing modes. Original workspace commands remain available; the old Turbo dev command is now `npm run dev:legacy`.

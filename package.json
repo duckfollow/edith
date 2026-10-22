@@ -3,14 +3,22 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "node scripts/dev.mjs",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "clean": "turbo run clean",
     "demo:sdk": "node examples/sdk/demo.mjs",
     "test:sdk": "npm run test --workspace @edith/sdk",
     "ca:create": "node scripts/create-debug-ca.mjs",
-    "demo:api": "node examples/api/server.mjs"
+    "demo:api": "node examples/api/server.mjs",
+    "dev:legacy": "turbo run dev",
+    "dev:team": "node scripts/dev.mjs --team",
+    "dev:desktop": "npm run dev --workspace appsdesktop",
+    "dev:api": "node examples/api/server.mjs",
+    "build:web": "npm run build:web --workspace appsdesktop",
+    "build:desktop": "npm run build --workspace appsdesktop",
+    "check": "npm run typecheck --workspace appsdesktop",
+    "test:desktop": "npm run test --workspace appsdesktop"
   },
   "devDependencies": {
     "turbo": "^2.3.3",

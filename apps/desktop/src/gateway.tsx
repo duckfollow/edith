@@ -16,7 +16,24 @@ type Route = {
   enabled: boolean;
   connected: boolean;
 };
-type Config = { version: 1; port: number; routes: Route[] };
+type Security = {
+  enabled: boolean;
+  allowedMethods: string[];
+  maxBodyBytes: number;
+  requestsPerMinute: number;
+};
+const defaultSecurity: Security = {
+  enabled: false,
+  allowedMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+  maxBodyBytes: 1048576,
+  requestsPerMinute: 120,
+};
+type Config = {
+  version: 1;
+  port: number;
+  routes: Route[];
+  security?: Security;
+};
 const key = "edith.gateway.v1";
 const initial: Config = {
   version: 1,
@@ -33,6 +50,18 @@ const initial: Config = {
   ],
 };
 function validate(c: Config): string {
+  if (
+    c.security &&
+    (!Array.isArray(c.security.allowedMethods) ||
+      !c.security.allowedMethods.length ||
+      !Number.isInteger(c.security.maxBodyBytes) ||
+      c.security.maxBodyBytes < 0 ||
+      c.security.maxBodyBytes > 16777216 ||
+      !Number.isInteger(c.security.requestsPerMinute) ||
+      c.security.requestsPerMinute < 1 ||
+      c.security.requestsPerMinute > 100000)
+  )
+    return "Check Security methods, body size (0–16384 KiB) and rate limit (1–100000).";
   if (
     !Number.isInteger(c.port) ||
     c.port < 1024 ||
@@ -318,6 +347,14 @@ function Gateway({
   useEffect(() => {
     onDiagram(instanceId, nodes, edges);
   }, [config, selected, runtime, busy, previewFlow, access, onDiagram]);
+  const security = config.security || defaultSecurity;
+  function updateSecurity(patch: Partial<Security>) {
+    setConfig((c) => ({
+      ...c,
+      security: { ...(c.security || defaultSecurity), ...patch },
+    }));
+    setNotice("Unsaved Security changes. Save and restart Gateway to apply.");
+  }
   const prefix =
     route?.path === "/" ? "" : (route?.path || "").replace(/\/$/, "");
   const exampleInput = `${prefix}/users`;
@@ -430,6 +467,100 @@ function Gateway({
           </button>
         </div>
       </div>
+      <details className="gw-security-panel">
+        <summary>
+          <span>Security rules</span>
+          <small>
+            {security.enabled
+              ? "Enabled · Restart to apply edits"
+              : "Off · Requests pass through"}
+          </small>
+        </summary>
+        <div className="gw-security-content">
+          <label className="gw-toggle-label">
+            <input
+              type="checkbox"
+              role="switch"
+              checked={security.enabled}
+              disabled={!access.manageGateway}
+              onChange={(e) => updateSecurity({ enabled: e.target.checked })}
+            />
+            Enable request protection
+          </label>
+          <p>
+            Rules apply to matching routes on this Gateway. Blocked requests
+            appear in Network and Logs. This does not change the system
+            firewall.
+          </p>
+          <fieldset disabled={!security.enabled || !access.manageGateway}>
+            <legend>Allowed HTTP methods</legend>
+            <div className="gw-security-methods">
+              {[
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "HEAD",
+                "OPTIONS",
+                "TRACE",
+              ].map((method) => (
+                <label key={method}>
+                  <input
+                    type="checkbox"
+                    checked={security.allowedMethods.includes(method)}
+                    onChange={(e) =>
+                      updateSecurity({
+                        allowedMethods: e.target.checked
+                          ? [...security.allowedMethods, method]
+                          : security.allowedMethods.filter((m) => m !== method),
+                      })
+                    }
+                  />
+                  {method}
+                </label>
+              ))}
+            </div>
+            <div className="gw-security-limits">
+              <label>
+                Maximum body size (KiB)
+                <input
+                  type="number"
+                  min="0"
+                  max="16384"
+                  step="1"
+                  value={security.maxBodyBytes / 1024}
+                  onChange={(e) =>
+                    updateSecurity({
+                      maxBodyBytes: Number(e.target.value) * 1024,
+                    })
+                  }
+                />
+                <small>
+                  0 blocks non-empty bodies. Checked before forwarding.
+                </small>
+              </label>
+              <label>
+                Requests per IP / minute
+                <input
+                  type="number"
+                  min="1"
+                  max="100000"
+                  value={security.requestsPerMinute}
+                  onChange={(e) =>
+                    updateSecurity({
+                      requestsPerMinute: Number(e.target.value),
+                    })
+                  }
+                />
+                <small>
+                  Uses socket IP, never client-supplied forwarding headers.
+                </small>
+              </label>
+            </div>
+          </fieldset>
+        </div>
+      </details>
       <div className="gw-config-body">
         <aside className="gw-route-list" aria-label="Gateway routes">
           <div className="gw-route-list-heading">

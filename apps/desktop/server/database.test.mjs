@@ -19,6 +19,12 @@ const owner = {
 };
 const config = {
   version: 1,
+  security: {
+    enabled: true,
+    allowedMethods: ["GET", "POST"],
+    maxBodyBytes: 1048576,
+    requestsPerMinute: 120,
+  },
   port: 8080,
   routes: [
     {

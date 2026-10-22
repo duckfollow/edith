@@ -13,6 +13,7 @@ export interface Header {
 }
 export interface HttpEntry {
   captureKind?: "http" | "tunnel" | "sdk" | "gateway";
+  blockedReason?: string;
   gatewayId?: string;
   gatewayPort?: number;
   routeId?: string;

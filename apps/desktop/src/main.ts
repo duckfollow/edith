@@ -504,6 +504,9 @@ function showHttp(entry: HttpEntry) {
             ? `Gateway :${entry.gatewayPort || ""} · ${entry.routePath}`
             : httpSource,
         ],
+        ...(entry.blockedReason
+          ? [["Blocked", entry.blockedReason] as [string, string]]
+          : []),
         ...(entry.upstream
           ? [["Backend", entry.upstream] as [string, string]]
           : []),
@@ -848,7 +851,7 @@ const logOriginSelect = selector(
   },
 );
 logOriginSelect.options[0].text = "File / selected SDK";
-logOriginSelect.options[1].text = "Gateway errors";
+logOriginSelect.options[1].text = "Gateway errors / blocked";
 within(logs, ".wb-filters").append(logOriginSelect);
 function filteredLogs() {
   return (gatewayLogView ? gatewayLogs : logEntries).filter(

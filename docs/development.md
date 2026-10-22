@@ -86,3 +86,7 @@ See [System Monitor](system-monitor.md) for CPU/RAM semantics and sampling lifec
 ## SQLite storage
 
 The development plugin opens `.local/edith.sqlite` automatically using Node built-in `node:sqlite` (Node 22.18+ / 24+). No database server or new npm dependency is needed. Accounts and explicitly saved Gateway setups persist; sessions and capture history remain in memory. Stop the server before filesystem backups. See [database setup, migration and backup](database.md).
+
+## Root command shortcuts
+
+From the repository root use `npm run dev` for Local web mode, `npm run dev:team` for Team web mode, `npm run dev:desktop` for native development, and `npm run dev:api` for the example backend in a second terminal. No shell-specific environment syntax is needed for these commands. Stop the current server before changing modes. Original workspace commands remain available; the old Turbo dev command is now `npm run dev:legacy`.

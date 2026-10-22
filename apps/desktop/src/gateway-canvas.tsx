@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent } from "react";
+import { useLayoutEffect, useRef, useState, type PointerEvent } from "react";
 import { icon, type IconName } from "./icons";
 import "./gateway-canvas.css";
 
@@ -79,19 +79,41 @@ export function GatewayCanvas({
       };
     });
   }
+  const currentNodes = useRef(nodes);
+  currentNodes.current = nodes;
+  const topology = nodes
+    .map((n) => n.id)
+    .sort()
+    .join("|");
   function fit() {
-    const r = host.current!.getBoundingClientRect();
-    const left = Math.min(0, ...nodes.map((n) => n.x)),
-      top = Math.min(0, ...nodes.map((n) => n.y));
-    const w = Math.max(...nodes.map((n) => n.x + width)) - left + 60;
-    const h = Math.max(...nodes.map((n) => n.y + nodeHeight(n))) - top + 60;
-    const scale = Math.max(0.25, Math.min(1, r.width / w, r.height / h));
+    const r = host.current?.getBoundingClientRect();
+    const all = currentNodes.current;
+    if (!r || r.width <= 0 || r.height <= 0 || !all.length) return;
+    const left = Math.min(...all.map((n) => n.x));
+    const top = Math.min(...all.map((n) => n.y));
+    const w = Math.max(...all.map((n) => n.x + width)) - left;
+    const h = Math.max(...all.map((n) => n.y + nodeHeight(n))) - top;
+    const scale = Math.min(
+      1,
+      Math.max(1, r.width - 64) / w,
+      Math.max(1, r.height - 110) / h,
+    );
     setView({
-      x: (r.width - w * scale) / 2 + 30 * scale - left * scale,
-      y: (r.height - h * scale) / 2 + 30 * scale - top * scale,
+      x: (r.width - w * scale) / 2 - left * scale,
+      y: 32 + (Math.max(1, r.height - 110) - h * scale) / 2 - top * scale,
       scale,
     });
   }
+  useLayoutEffect(() => {
+    const element = host.current;
+    if (!element) return;
+    fit();
+    const observer = new ResizeObserver(() => {
+      if (!gesture.current) fit();
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [topology]);
   function begin(e: PointerEvent, node?: DiagramNode, source?: string) {
     if (e.button !== 0) return;
     e.preventDefault();

@@ -1,3 +1,8 @@
+import {
+  validateSecurity,
+  createRateLimiter,
+  readLimitedBody,
+} from "./gateway-security.mjs";
 import http from "node:http";
 import https from "node:https";
 import { randomBytes } from "node:crypto";
@@ -80,6 +85,9 @@ export function validateGateway(c, controlPort = 1420) {
   if (!routes.some((r) => r.enabled)) throw Error("Enable at least one route");
   return {
     port: c.port,
+    ...(c.security === undefined
+      ? {}
+      : { security: validateSecurity(c.security) }),
     routes: routes.sort((a, b) => b.path.length - a.path.length),
   };
 }
@@ -171,150 +179,201 @@ export function createGateway({
     )
       throw Error("Port conflicts with another Gateway or its backend");
     pending = true;
-    const listener = http.createServer({ maxHeaderSize: 16384 }, (req, res) => {
-      const fail = (status, message) => {
-        if (res.headersSent) return res.destroy();
-        res.writeHead(status, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: message }));
-      };
-      if (
-        ![`127.0.0.1:${next.port}`, `localhost:${next.port}`].includes(
-          req.headers.host,
-        )
-      )
-        return fail(403, "Use the local gateway address");
-      if (!req.url?.startsWith("/") || req.url.startsWith("//"))
-        return fail(400, "Origin-form request required");
-      const q = req.url.indexOf("?"),
-        path = q < 0 ? req.url : req.url.slice(0, q),
-        query = q < 0 ? "" : req.url.slice(q);
-      const route = next.routes.find(
-        (r) =>
-          r.enabled &&
-          (r.path === "/" || path === r.path || path.startsWith(r.path + "/")),
-      );
-      if (!route) return fail(404, "No gateway route matches this path");
-      if (upstreams.size >= 64)
-        return fail(503, "Gateway connection limit reached");
-      const started = Date.now(),
-        timestamp = new Date().toISOString();
-      const requestPreview = preview(),
-        responsePreview = preview();
-      let responseHeaders = {},
-        captureError = "",
-        captured = false;
-      req.on("data", (chunk) => requestPreview.add(chunk));
-      function finish() {
-        if (captured) return;
-        captured = true;
-        const request = requestPreview.result(
-            req.headers["content-encoding"]
-              ? ""
-              : req.headers["content-type"] || "",
-          ),
-          response = responsePreview.result(
-            responseHeaders["content-encoding"]
-              ? ""
-              : responseHeaders["content-type"] || "",
-          );
-        const id = ++sequence;
-        const entry = {
-          id,
-          timestamp,
-          captureKind: "gateway",
-          routeId: route.id || route.path,
-          routePath: route.path,
-          upstream: route.target,
-          method: req.method,
-          url: `http://127.0.0.1:${next.port}${req.url}`,
-          status: res.writableFinished ? res.statusCode : 0,
-          duration: Date.now() - started,
-          size: response.size,
-          requestHeaders: captureHeaders(req.headers),
-          responseHeaders: captureHeaders(responseHeaders),
-          requestBody: request.body,
-          responseBody: response.body,
-          requestEncoding: request.encoding,
-          encoding: response.encoding,
-          requestTruncated: request.truncated,
-          responseTruncated: response.truncated,
-          mimeType: responseHeaders["content-type"] || "",
-          timings: {},
-          error:
-            captureError ||
-            (!res.writableFinished
-              ? "Connection closed before completion"
-              : undefined),
+    const security = next.security?.enabled ? next.security : null;
+    const allowRate = createRateLimiter(security?.requestsPerMinute || 100000);
+    const listener = http.createServer(
+      { maxHeaderSize: 16384 },
+      async (req, res) => {
+        const fail = (status, message) => {
+          if (res.headersSent) return res.destroy();
+          res.writeHead(status, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: message }));
         };
-        records.push(entry);
-        if (records.length > 256) records.shift();
-        if (entry.error || entry.status >= 500) {
-          logs.push({
+        if (
+          ![`127.0.0.1:${next.port}`, `localhost:${next.port}`].includes(
+            req.headers.host,
+          )
+        )
+          return fail(403, "Use the local gateway address");
+        if (!req.url?.startsWith("/") || req.url.startsWith("//"))
+          return fail(400, "Origin-form request required");
+        const q = req.url.indexOf("?"),
+          path = q < 0 ? req.url : req.url.slice(0, q),
+          query = q < 0 ? "" : req.url.slice(q);
+        const route = next.routes.find(
+          (r) =>
+            r.enabled &&
+            (r.path === "/" ||
+              path === r.path ||
+              path.startsWith(r.path + "/")),
+        );
+        if (!route) return fail(404, "No gateway route matches this path");
+        if (upstreams.size >= 64)
+          return fail(503, "Gateway connection limit reached");
+        const started = Date.now(),
+          timestamp = new Date().toISOString();
+        const requestPreview = preview(),
+          responsePreview = preview();
+        let responseHeaders = {},
+          captureError = "",
+          captured = false,
+          blockedReason = "";
+        if (!security) req.on("data", (chunk) => requestPreview.add(chunk));
+        function finish() {
+          if (captured) return;
+          captured = true;
+          const request = requestPreview.result(
+              req.headers["content-encoding"]
+                ? ""
+                : req.headers["content-type"] || "",
+            ),
+            response = responsePreview.result(
+              responseHeaders["content-encoding"]
+                ? ""
+                : responseHeaders["content-type"] || "",
+            );
+          const id = ++sequence;
+          const entry = {
             id,
             timestamp,
-            level: "ERROR",
-            source: `Gateway ${route.path}`,
-            message: `${req.method} ${req.url} → ${entry.status || "Failed"}: ${entry.error || "Backend returned an error"}`,
-            raw: JSON.stringify({
-              route: route.path,
-              target: route.target,
-              status: entry.status,
-              error: entry.error,
-            }),
-          });
-          if (logs.length > 256) logs.shift();
+            captureKind: "gateway",
+            ...(blockedReason ? { blockedReason } : {}),
+            routeId: route.id || route.path,
+            routePath: route.path,
+            upstream: route.target,
+            method: req.method,
+            url: `http://127.0.0.1:${next.port}${req.url}`,
+            status: res.writableFinished ? res.statusCode : 0,
+            duration: Date.now() - started,
+            size: response.size,
+            requestHeaders: captureHeaders(req.headers),
+            responseHeaders: captureHeaders(responseHeaders),
+            requestBody: request.body,
+            responseBody: response.body,
+            requestEncoding: request.encoding,
+            encoding: response.encoding,
+            requestTruncated: request.truncated,
+            responseTruncated: response.truncated,
+            mimeType: responseHeaders["content-type"] || "",
+            timings: {},
+            error:
+              captureError ||
+              (!res.writableFinished
+                ? "Connection closed before completion"
+                : undefined),
+          };
+          records.push(entry);
+          if (records.length > 256) records.shift();
+          if (entry.error || entry.status >= 500) {
+            logs.push({
+              id,
+              timestamp,
+              level: blockedReason ? "WARN" : "ERROR",
+              source: `Gateway ${route.path}`,
+              message: `${req.method} ${req.url} → ${entry.status || "Failed"}: ${entry.error || "Backend returned an error"}`,
+              raw: JSON.stringify({
+                route: route.path,
+                target: route.target,
+                status: entry.status,
+                error: entry.error,
+              }),
+            });
+            if (logs.length > 256) logs.shift();
+          }
+          onCapture(entry, logs.at(-1)?.id === id ? logs.at(-1) : null);
         }
-        onCapture(entry, logs.at(-1)?.id === id ? logs.at(-1) : null);
-      }
-      res.once("finish", finish);
-      res.once("close", finish);
-      const target = new URL(route.target);
-      const tail =
-        route.strip && route.path !== "/"
-          ? path.slice(route.path.length)
-          : path;
-      const upstreamPath =
-        target.pathname.replace(/\/$/, "") +
-        (tail.startsWith("/") ? tail : "/" + tail) +
-        query;
-      const h = headers(req.headers);
-      h.host = target.host;
-      delete h["forwarded"];
-      delete h["x-forwarded-for"];
-      delete h["x-forwarded-host"];
-      delete h["x-forwarded-proto"];
-      h["x-forwarded-for"] = req.socket.remoteAddress;
-      h["x-forwarded-host"] = req.headers.host || "";
-      h["x-forwarded-proto"] = "http";
-      const upstream = (target.protocol === "https:" ? https : http).request(
-        target,
-        { method: req.method, path: upstreamPath, headers: h },
-        (response) => {
-          responseHeaders = headers(response.headers);
-          res.writeHead(response.statusCode || 502, responseHeaders);
-          response.on("data", (chunk) => responsePreview.add(chunk));
-          response.on("error", (error) => {
-            captureError = error.message;
-            res.destroy();
-          });
-          response.pipe(res);
-        },
-      );
-      upstreams.add(upstream);
-      upstream.once("close", () => upstreams.delete(upstream));
-      upstream.setTimeout(30000, () =>
-        upstream.destroy(Error("Upstream timed out")),
-      );
-      upstream.on("error", (error) => {
-        captureError = error.message;
-        fail(502, error.message);
-      });
-      req.on("aborted", () => upstream.destroy());
-      res.on("close", () => {
-        if (!res.writableFinished) upstream.destroy();
-      });
-      req.pipe(upstream);
-    });
+        res.once("finish", finish);
+        res.once("close", finish);
+        let bufferedBody;
+        if (security) {
+          const block = (status, reason) => {
+            blockedReason = reason;
+            captureError = reason;
+            responseHeaders = {
+              "content-type": "application/json",
+              "x-edith-blocked": "true",
+            };
+            responsePreview.add(Buffer.from(JSON.stringify({ error: reason })));
+            res.setHeader("X-Edith-Blocked", "true");
+            res.setHeader("Connection", "close");
+            fail(status, reason);
+          };
+          if (!allowRate(req.socket.remoteAddress || "unknown")) {
+            res.setHeader("Retry-After", "60");
+            block(429, "Security: rate limit exceeded");
+            return;
+          }
+          if (!security.allowedMethods.includes(req.method)) {
+            res.setHeader("Allow", security.allowedMethods.join(", "));
+            block(405, "Security: HTTP method not allowed");
+            return;
+          }
+          if (
+            Number(req.headers["content-length"] || 0) > security.maxBodyBytes
+          ) {
+            block(413, "Security: request body exceeds limit");
+            return;
+          }
+          try {
+            bufferedBody = await readLimitedBody(
+              req,
+              security.maxBodyBytes,
+              (chunk) => requestPreview.add(chunk),
+            );
+          } catch (error) {
+            if (!res.destroyed) block(error.status || 400, error.message);
+            return;
+          }
+        }
+        const target = new URL(route.target);
+        const tail =
+          route.strip && route.path !== "/"
+            ? path.slice(route.path.length)
+            : path;
+        const upstreamPath =
+          target.pathname.replace(/\/$/, "") +
+          (tail.startsWith("/") ? tail : "/" + tail) +
+          query;
+        const h = headers(req.headers);
+        h.host = target.host;
+        delete h["forwarded"];
+        delete h["x-forwarded-for"];
+        delete h["x-forwarded-host"];
+        delete h["x-forwarded-proto"];
+        h["x-forwarded-for"] = req.socket.remoteAddress;
+        h["x-forwarded-host"] = req.headers.host || "";
+        h["x-forwarded-proto"] = "http";
+        const upstream = (target.protocol === "https:" ? https : http).request(
+          target,
+          { method: req.method, path: upstreamPath, headers: h },
+          (response) => {
+            responseHeaders = headers(response.headers);
+            res.writeHead(response.statusCode || 502, responseHeaders);
+            response.on("data", (chunk) => responsePreview.add(chunk));
+            response.on("error", (error) => {
+              captureError = error.message;
+              res.destroy();
+            });
+            response.pipe(res);
+          },
+        );
+        upstreams.add(upstream);
+        upstream.once("close", () => upstreams.delete(upstream));
+        upstream.setTimeout(30000, () =>
+          upstream.destroy(Error("Upstream timed out")),
+        );
+        upstream.on("error", (error) => {
+          captureError = error.message;
+          fail(502, error.message);
+        });
+        req.on("aborted", () => upstream.destroy());
+        res.on("close", () => {
+          if (!res.writableFinished) upstream.destroy();
+        });
+        if (bufferedBody !== undefined) upstream.end(bufferedBody);
+        else req.pipe(upstream);
+      },
+    );
     listener.requestTimeout = 30000;
     listener.headersTimeout = 10000;
     listener.on("connection", (socket) => {
