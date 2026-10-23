@@ -1,5 +1,8 @@
+import { createLoading } from "./components/loading";
+import { loadAccessPolicy } from "./access-policy";
 import { icon } from "./icons";
 import "./accounts.css";
+const LOADING_MINIMUM_DURATION_MS = 1500;
 type User = { id: string; username: string; role: string; disabled: boolean };
 export function mountAccounts(section: HTMLElement) {
   const heading = document.createElement("div");
@@ -44,20 +47,32 @@ export function mountAccounts(section: HTMLElement) {
       const button = f.querySelector<HTMLButtonElement>(
         'button[type="submit"]',
       )!;
+      if (f.getAttribute("aria-busy") === "true") return;
+      const values = Object.fromEntries(new FormData(f).entries()) as Record<
+        string,
+        string
+      >;
+      const originalLabel = button.textContent || "Continue";
+      const loader = createLoading({
+        label: "Please wait…",
+        compact: true,
+        minimumDurationMs: LOADING_MINIMUM_DURATION_MS,
+      });
+      f.setAttribute("aria-busy", "true");
       button.disabled = true;
-      note.textContent = "Please wait…";
+      button.replaceChildren(loader.element);
+      note.textContent = "";
       try {
-        await submit(
-          Object.fromEntries(new FormData(f).entries()) as Record<
-            string,
-            string
-          >,
-        );
+        await submit(values);
         note.textContent = "";
       } catch (error) {
         note.textContent =
           error instanceof Error ? error.message : "Request failed";
       } finally {
+        await loader.waitForMinimum();
+        f.removeAttribute("aria-busy");
+        loader.destroy();
+        button.textContent = originalLabel;
         button.disabled = false;
       }
     };
@@ -65,8 +80,35 @@ export function mountAccounts(section: HTMLElement) {
   }
   const credentials =
     '<label>Username<input name="username" autocomplete="username" required minlength="3" maxlength="64" pattern="[a-zA-Z0-9][a-zA-Z0-9._-]{2,63}"></label><label>Password<input name="password" type="password" autocomplete="current-password" required maxlength="256"></label>';
+  const sessionDialog = document.createElement("dialog");
+  sessionDialog.className = "account-login account-session-loading";
+  sessionDialog.setAttribute("aria-label", "Checking workspace session");
+  sessionDialog.addEventListener("cancel", (event) => event.preventDefault());
+  const initialLoading = createLoading({
+    minimumDurationMs: LOADING_MINIMUM_DURATION_MS,
+    label: "Opening your workspace",
+    description: "Checking your session and access.",
+  });
+  let activeSessionLoading = initialLoading;
+  sessionDialog.append(initialLoading.element);
+  document.body.append(sessionDialog);
+  sessionDialog.showModal();
+  async function finishSessionLoading() {
+    await activeSessionLoading.waitForMinimum();
+    if (!sessionDialog.isConnected) return;
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      sessionDialog.classList.add("is-leaving");
+      await new Promise((resolve) => setTimeout(resolve, 160));
+    }
+    sessionDialog.close();
+    sessionDialog.remove();
+    document
+      .querySelector<HTMLElement>('.wb-nav-button[aria-current="page"]')
+      ?.focus({ preventScroll: true });
+  }
   function login(initialized: boolean) {
-    const dialog = document.createElement("dialog");
+    const dialog = sessionDialog;
+    dialog.replaceChildren();
     dialog.className = "account-login";
     dialog.setAttribute(
       "aria-label",
@@ -94,7 +136,19 @@ export function mountAccounts(section: HTMLElement) {
         `<button type="submit">${initialized ? "Log in" : "Create Admin"}</button>`,
       async (data) => {
         await api(initialized ? "login" : "setup", "POST", data);
-        location.reload();
+        const policy = await loadAccessPolicy();
+        if (policy.role === "unavailable")
+          throw Error("Signed in, but unable to load permissions. Try again.");
+        window.dispatchEvent(new Event("edith-access-policy"));
+        const loading = createLoading({
+          minimumDurationMs: LOADING_MINIMUM_DURATION_MS,
+          label: "Preparing your workspace",
+          description: "Applying your account permissions.",
+        });
+        activeSessionLoading = loading;
+        dialog.classList.add("account-session-loading");
+        dialog.replaceChildren(loading.element);
+        await refresh();
       },
     );
     const brand = document.createElement("div");
@@ -175,8 +229,8 @@ export function mountAccounts(section: HTMLElement) {
       : "Your first account receives Admin access. Keep the setup token private.";
     footer.append(help);
     dialog.append(brand, intro, f, footer);
-    document.body.append(dialog);
-    dialog.showModal();
+    // Keep the same modal/backdrop across session check, login and success.
+    username.focus({ preventScroll: true });
   }
   let signedIn = false;
   let teamDetected = false;
@@ -186,6 +240,7 @@ export function mountAccounts(section: HTMLElement) {
       if (state.mode !== "team") throw Error("Not in Team mode");
       teamDetected = true;
       if (!state.user) {
+        await activeSessionLoading.waitForMinimum();
         login(state.initialized);
         status.textContent = "Login required";
         return;
@@ -213,6 +268,7 @@ export function mountAccounts(section: HTMLElement) {
       if (user.role !== "admin") {
         body.textContent =
           "Only Admins can manage accounts. You can use the tools allowed by your role.";
+        await finishSessionLoading();
         return;
       }
       const panel = document.createElement("section");
@@ -385,15 +441,22 @@ export function mountAccounts(section: HTMLElement) {
       createPanel.append(create);
       body.append(panel, createPanel);
       await renderUsers();
+      await finishSessionLoading();
       // Revoked/expired sessions must not leave previously privileged data visible indefinitely.
     } catch {
       if (teamDetected) {
         status.textContent = "Account service unavailable. Refresh to retry.";
+        sessionDialog.replaceChildren();
+        const error = document.createElement("p");
+        error.textContent =
+          "Unable to open the workspace. Refresh this page to retry.";
+        sessionDialog.append(error);
         return;
       }
       status.textContent = "Local mode · accounts are not enabled.";
       body.innerHTML =
         "<p>Local mode works without an account.</p><p>To enable accounts, restart with <code>EDITH_MODE=team npm run dev:web --workspace appsdesktop</code>. Team mode is currently available in the development runtime only.</p>";
+      await finishSessionLoading();
     }
   }
   void refresh();

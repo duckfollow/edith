@@ -1312,8 +1312,7 @@ window.addEventListener("edith-gateway-view", (event) => {
   renderHttp();
 });
 
-void loadAccessPolicy().then((policy) => {
-  window.dispatchEvent(new Event("edith-access-policy"));
+function renderAccessHeader(policy: typeof workspacePolicy) {
   get("#wb-workspace-name").textContent =
     policy.mode === "team" ? "Team workspace" : "Local workspace";
   const account = action(
@@ -1353,6 +1352,12 @@ void loadAccessPolicy().then((policy) => {
       button.title = "Export disabled by workspace policy";
   }
   renderHttp();
-});
+}
+window.addEventListener("edith-access-policy", () =>
+  renderAccessHeader(workspacePolicy),
+);
+void loadAccessPolicy().then(() =>
+  window.dispatchEvent(new Event("edith-access-policy")),
+);
 
 mountAccounts(get("#tool-management"));

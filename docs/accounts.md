@@ -115,3 +115,7 @@ Protected development API จะตอบ 401 หากไม่มี session �
 ## Root command shortcuts
 
 From the repository root use `npm run dev` for Local web mode, `npm run dev:team` for Team web mode, `npm run dev:desktop` for native development, and `npm run dev:api` for the example backend in a second terminal. No shell-specific environment syntax is needed for these commands. Stop the current server before changing modes. Original workspace commands remain available; the old Turbo dev command is now `npm run dev:legacy`.
+
+## Loading และการเปลี่ยนหน้า Login
+
+ตรวจ session ผ่าน loading dialog ก่อนแสดง Login โดยใช้ backdrop เดียวกัน ปุ่ม submit มี loading animation และป้องกันการส่งซ้ำ เมื่อ Login/สร้าง Admin สำเร็จจะโหลด policy และข้อมูลบัญชีต่อโดยไม่ reload ทั้งหน้า แล้วค่อย fade เข้าสู่ workspace หากรหัสผ่านผิดฟอร์มยังอยู่และแสดงข้อความให้ลองใหม่ รองรับ reduced motion ส่วน Logout/session revocation ยัง reload เพื่อล้างข้อมูลบัญชีก่อนหน้า ดู [Shared loading component](loading-component.md)

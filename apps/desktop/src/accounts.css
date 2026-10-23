@@ -575,3 +575,48 @@
     margin-bottom: 26px;
   }
 }
+.account-login {
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+.account-login.account-session-loading {
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.account-session-loading > .edith-loading {
+  width: 100%;
+}
+.account-login.is-leaving {
+  opacity: 0;
+  transform: translateY(5px);
+}
+.account-login.is-leaving::backdrop {
+  background: #01040900;
+  backdrop-filter: blur(0);
+  transition:
+    background 160ms ease,
+    backdrop-filter 160ms ease;
+}
+.account-form[aria-busy="true"] button[type="submit"] {
+  cursor: wait;
+}
+.account-form button[type="submit"] .edith-loading {
+  color: inherit;
+  font: inherit;
+}
+@media (prefers-reduced-motion: reduce) {
+  .account-login,
+  .account-login.is-leaving::backdrop {
+    transition: none;
+  }
+  .account-login.is-leaving {
+    transform: none;
+  }
+}
