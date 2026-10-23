@@ -134,7 +134,7 @@ staging.my-project.test
 
 ข้อยกเว้นมีผลเหนือการเลือก inspect: โดเมนที่ยกเว้นจะยังส่งผ่านแบบ encrypted CONNECT tunnel ไม่ใช่การบล็อก traffic
 
-ตั้งค่าแล้วกด **Start proxy** หรือ Stop/Start ใหม่ ค่ามีผลตอน Start ไม่ใช่ทันทีที่แก้ฟอร์ม การเปลี่ยน settings ไม่แก้ trust หรือ Wi-Fi proxy ให้อัตโนมัติ
+ตั้งค่าแล้วกด **Start proxy** หรือ Stop/Start ใหม่ ค่ามีผลตอน Start ไม่ใช่ทันทีที่แก้ฟอร์ม การเปลี่ยน settings ไม่แก้ trust; Wi-Fi proxy ควบคุมแยกผ่าน System Proxy ใน macOS desktop
 
 ## 7. ดู request/response
 
@@ -189,3 +189,31 @@ EDITH รุ่นนี้รองรับ inspected HTTP/1.1 ยังไม
 - [CA generation](debug-ca.md)
 - [Gateway](gateway.md)
 - [Access policy](access-control.md)
+
+
+## เปิด–ปิด System Proxy จาก EDITH (macOS desktop)
+
+ใน **Network → Live local proxy → Proxy settings → System Proxy**:
+
+1. เปิด EDITH ผ่าน `npm run dev:desktop` และกด **Start proxy** ก่อน
+2. เลือก Network service เช่น Wi-Fi หรือ Ethernet แล้วเปิด **Use EDITH as System Proxy**
+3. ยืนยันสิทธิ์ผู้ดูแลผ่านหน้าต่างของ macOS หากระบบร้องขอ
+4. ปิดสวิตช์หรือกด **Restore saved settings** เพื่อคืนค่าที่บันทึกไว้
+
+เปลี่ยนเฉพาะ HTTP และ HTTPS ของ service ที่เลือกเป็น `127.0.0.1` และ port ของ Proxy ที่กำลังทำงาน ไม่แก้ SOCKS, PAC, auto discovery, bypass list หรือ certificate trust หน้าเว็บและระบบอื่นจะแจ้งว่าใช้ได้เฉพาะ macOS desktop
+
+สถานะอ่านจาก macOS และมีปุ่ม Refresh status เมื่อแก้ค่าจากภายนอก แอปเก็บค่าเดิมใน app data ก่อนเปลี่ยน และคืนค่าก่อน Stop หรือปิดหน้าต่างตามปกติ หากกดยกเลิกสิทธิ์หรือเปลี่ยนได้ไม่ครบ จะเก็บข้อมูลคืนค่าไว้และแสดงปุ่ม Restore การ force quit, crash หรือหยุด dev server ไม่รับประกันการคืนค่าอัตโนมัติ ให้เปิดแอปใหม่เพื่อ Restore หรือปิด HTTP/HTTPS Proxy ใน macOS Settings ก่อนใช้อินเทอร์เน็ตต่อ
+
+กรณีเดิมยังไม่เคยกำหนด server/port จะคืนสถานะเป็น Off; macOS อาจยังแสดง address ของ EDITH ในช่องที่ปิดอยู่ ไม่รองรับการแทนที่ Proxy เดิมที่ใช้ authentication เพื่อหลีกเลี่ยงการสูญเสียข้อมูลรับรอง ค่าเดิมที่มี server/port ปกติจะถูกคืนพร้อมสถานะเปิด–ปิด
+
+Proxy runtime ยังไม่รวมใน packaged desktop: ฟีเจอร์นี้ใช้งานกับ desktop development runtime ในตอนนี้ การยืนยันสิทธิ์และการเปิด–ปิด System Proxy จริงยังต้องทดสอบบนเครื่องโดยผู้ใช้
+
+
+### Enable System Proxy on Start
+
+On macOS desktop, this preference defaults to on and remembers both the preference and selected network service in app local storage. An explicit Start first starts the local proxy, then requests macOS permission to configure HTTP/HTTPS for the selected service. Cancellation or failure keeps the local proxy running and displays an error. Turn this preference off for manually configured test apps. Reloading the page does not enable System Proxy automatically. Stop still restores the saved settings.
+
+
+### Remember HTTPS inspection settings
+
+HTTPS inspection defaults to off on first use. The inspection switch, all-hostnames option, selected domains and exclusions are saved locally on edits and Start, and restored on the next visit. Stopped proxies show "Enabled on next Start" for a saved enabled configuration; running proxies display actual runtime settings. Restoring preferences does not start inspection or trust a CA automatically. A trusted client CA is still required.

@@ -453,9 +453,38 @@ export function mountAccounts(section: HTMLElement) {
         sessionDialog.append(error);
         return;
       }
-      status.textContent = "Local mode · accounts are not enabled.";
-      body.innerHTML =
-        "<p>Local mode works without an account.</p><p>To enable accounts, restart with <code>EDITH_MODE=team npm run dev:web --workspace appsdesktop</code>. Team mode is currently available in the development runtime only.</p>";
+      section.classList.add("is-local-workspace");
+      heading.innerHTML = '<div><div class="wb-eyebrow">WORKSPACE SETTINGS</div><h1>Workspace &amp; access</h1><p>Your workspace, your access. Choose how you work with EDITH.</p></div><span class="management-mode"><span></span>Local mode</span>';
+      status.textContent = "";
+      body.className = "management-local";
+      body.innerHTML = `
+        <section class="management-owner-card" aria-labelledby="management-owner-title">
+          <div class="management-card-top"><span class="management-symbol" data-management-icon="shield"></span><span class="management-tag">CURRENT WORKSPACE</span></div>
+          <h2 id="management-owner-title">A workspace of your own.</h2>
+          <p>Get straight to debugging. Local mode gives you full workspace access without signing in.</p>
+          <div class="management-owner"><span class="management-avatar">E</span><div><strong>Local owner</strong><small>This device</small></div><span class="management-role">Admin</span></div>
+          <dl class="management-facts"><div><dt>Sign-in</dt><dd>Not required</dd></div><div><dt>Workspace access</dt><dd>Full access</dd></div><div><dt>Account management</dt><dd>Available in Team mode</dd></div></dl>
+          <button type="button" data-management="open-network">Open Network Inspector <span aria-hidden="true">→</span></button>
+        </section>
+        <section class="management-team-card" aria-labelledby="management-team-title">
+          <div class="management-card-top"><span class="management-symbol" data-management-icon="network"></span><span class="management-tag">WORK WITH A TEAM</span></div>
+          <h2 id="management-team-title">Give everyone the right access.</h2>
+          <p>Team mode adds sign-in and accounts with roles for your workspace.</p>
+          <ul class="management-benefits"><li><strong>Individual accounts</strong><span>Create and manage workspace members.</span></li><li><strong>Access by role</strong><span>Choose Admin, Developer or Viewer permissions.</span></li><li><strong>Session controls</strong><span>Disable accounts and revoke existing sessions.</span></li></ul>
+          <details class="management-team-guide"><summary>Set up Team mode <span aria-hidden="true">↗</span></summary><div><p>Stop the current development server, then run this from the EDITH project folder:</p><div class="management-command"><code>npm run dev:team</code><button type="button" data-management="copy">Copy command</button></div><p>Open <a href="http://127.0.0.1:1420/">127.0.0.1:1420</a> and use the setup token printed in the terminal to create your first Admin.</p><small>Available in the development runtime. Switching modes requires a server restart.</small><p role="status" data-management="copy-status"></p></div></details>
+        </section>
+        <div class="management-local-note"><span data-management-icon="info"></span><p>Local mode is ready to use. Switch to Team mode when you need separate accounts and roles.</p></div>`;
+      for (const name of ["shield", "network", "info"] as const) {
+        body.querySelector(`[data-management-icon="${name}"]`)!.append(icon(name));
+      }
+      body.querySelector<HTMLButtonElement>('[data-management="open-network"]')!.onclick = () => {
+        document.querySelector<HTMLButtonElement>('.wb-nav-button[data-tool="network"]')?.click();
+      };
+      body.querySelector<HTMLButtonElement>('[data-management="copy"]')!.onclick = async () => {
+        const feedback = body.querySelector<HTMLElement>('[data-management="copy-status"]')!;
+        try { await navigator.clipboard.writeText("npm run dev:team"); feedback.textContent = "Command copied."; }
+        catch { feedback.textContent = "Select and copy the command above."; }
+      };
       await finishSessionLoading();
     }
   }

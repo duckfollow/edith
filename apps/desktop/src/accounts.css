@@ -620,3 +620,56 @@
     transform: none;
   }
 }
+
+/* Workspace management: give Local mode a useful home as well as Team setup. */
+.wb-workspace:has(#tool-management:not([hidden])) > .wb-sdk-panel { display: none; }
+.accounts-page.is-local-workspace { max-width: 1180px; margin-inline: auto; }
+.is-local-workspace > .wb-title-row { align-items: center; margin-bottom: 30px; gap: 20px; }
+.is-local-workspace > .account-status:empty { display: none; }
+.management-mode { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--gh-border); border-radius: 20px; font-size: 11px; color: var(--gh-muted); white-space: nowrap; }
+.management-mode > span { width: 6px; height: 6px; background: #3fb950; border-radius: 50%; }
+.management-local { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
+.management-owner-card, .management-team-card { min-width: 0; padding: 28px; border: 1px solid var(--gh-border); border-radius: 14px; background: var(--gh-surface); }
+.management-owner-card { background: linear-gradient(145deg, #3fb9500b, transparent 60%), var(--gh-surface); }
+.management-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+.management-symbol { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--gh-border); background: var(--gh-bg); color: var(--gh-muted); }
+.management-owner-card .management-symbol { color: #62e5b5; border-color: #3fb95040; background: #3fb9500a; }
+.management-symbol svg { width: 19px; height: 19px; }
+.management-tag { font-size: 9px; font-weight: 600; letter-spacing: 0.12em; color: var(--gh-muted); }
+.management-local h2 { margin: 0 0 12px; font-size: 21px; line-height: 1.35; font-weight: 600; letter-spacing: -0.025em; }
+#tool-management .management-local p { margin: 0; color: var(--gh-muted); font-size: 12px; line-height: 1.8; }
+.management-owner { display: flex; align-items: center; gap: 12px; margin: 26px 0 8px; padding: 18px 0; border-top: 1px solid var(--gh-border); border-bottom: 1px solid var(--gh-border); }
+.management-avatar { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: #3fb95016; color: #62e5b5; font-size: 18px; font-weight: 650; }
+.management-owner > div { display: flex; flex: 1; flex-direction: column; gap: 6px; }
+.management-owner strong { font-size: 12px; }
+.management-owner small { font-size: 10px; color: var(--gh-muted); }
+.management-role { color: #62e5b5; background: #3fb95012; border-radius: 5px; padding: 5px 8px; font-size: 10px; }
+.management-facts { margin: 0 0 22px; }
+.management-facts > div { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 11px 0; font-size: 11px; }
+.management-facts dt { color: var(--gh-muted); }
+.management-facts dd { margin: 0; color: var(--gh-text); }
+.management-owner-card > button { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 11px 14px; background: #238636; border: 1px solid #3fb95050; border-radius: 7px; color: #fff; font-size: 11px; cursor: pointer; }
+.management-owner-card > button:hover { background: #2ea043; }
+.management-benefits { list-style: none; padding: 0; margin: 26px 0; display: grid; gap: 22px; }
+.management-benefits li { display: grid; grid-template-columns: 5px 1fr; column-gap: 12px; row-gap: 7px; }
+.management-benefits li::before { content: ""; width: 4px; height: 4px; border-radius: 50%; background: var(--gh-muted); margin-top: 5px; }
+.management-benefits strong { font-weight: 500; font-size: 12px; }
+.management-benefits li > span { grid-column: 2; font-size: 11px; color: var(--gh-muted); line-height: 1.6; }
+.management-team-guide { border-top: 1px solid var(--gh-border); padding-top: 17px; }
+.management-team-guide summary { display: flex; justify-content: space-between; align-items: center; color: var(--gh-text); font-size: 12px; cursor: pointer; list-style: none; }
+.management-team-guide summary::-webkit-details-marker { display: none; }
+.management-team-guide[open] summary { margin-bottom: 18px; }
+.management-team-guide summary > span { color: var(--gh-muted); transition: transform 160ms; }
+.management-team-guide[open] summary > span { transform: rotate(90deg); }
+.management-command { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px; margin: 12px 0; background: var(--gh-bg); border: 1px solid var(--gh-border); border-radius: 7px; }
+.management-command code { flex: 1; color: #62e5b5; font-size: 11px; white-space: nowrap; user-select: all; }
+.management-command button { font-size: 10px; }
+.management-team-guide a { color: var(--gh-blue); }
+.management-team-guide small { display: block; margin-top: 12px; color: var(--gh-muted); font-size: 10px; line-height: 1.7; }
+.management-local-note { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 10px; padding: 0 4px; }
+.management-local-note svg { width: 15px; height: 15px; color: var(--gh-muted); margin-top: 3px; }
+#tool-management .management-local-note p { font-size: 11px; }
+.management-local button:focus-visible, .management-local summary:focus-visible { outline: 2px solid var(--gh-blue); outline-offset: 4px; }
+@media (max-width: 950px) { .management-local { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .management-owner-card, .management-team-card { padding: 22px; } .is-local-workspace > .wb-title-row { align-items: flex-start; flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) { .management-team-guide summary > span { transition: none; } }

@@ -40,6 +40,23 @@ npm run dev:web --workspace appsdesktop
 
 ## Management
 
+### Local mode: Workspace & access
+
+หน้า **Management** ใน Local mode ใช้หัวข้อ **Workspace & access** พร้อมป้าย **Local mode** และแบ่งเนื้อหาเป็นสองการ์ด:
+
+- **Current workspace** แสดง Local owner, ข้อมูลการเข้าถึง workspace และสถานะที่ไม่ต้องลงชื่อเข้าใช้ พร้อมปุ่ม **Open Network Inspector** เพื่อไปหน้า Network
+- **Work with a team** อธิบายบัญชีรายบุคคล, Admin / Developer / Viewer และการควบคุม session
+
+กด **Set up Team mode** เพื่อขยายคำแนะนำ แล้วกด **Copy command** เพื่อคัดลอก `npm run dev:team` หากเบราว์เซอร์ไม่อนุญาตให้คัดลอก สามารถเลือกข้อความคำสั่งแล้วคัดลอกเองได้
+
+การเปิดคำแนะนำหรือคัดลอกคำสั่งไม่ได้เปลี่ยนโหมดทันที ต้องหยุด development server เดิม รันคำสั่งจาก repository root แล้วเปิด `http://127.0.0.1:1420/` หากเป็นการตั้งค่าครั้งแรก ให้ใช้ setup token จาก terminal เพื่อสร้าง Admin รายละเอียดอยู่ในหัวข้อเริ่มใช้งานด้านบน
+
+แถบ **SDK connection** ซ่อนเฉพาะขณะอยู่หน้า Management และกลับมาเมื่อเปิดเครื่องมืออื่น การซ่อนแถบไม่ได้หยุด SDK receiver การ์ดเรียงข้างกันเมื่อมีพื้นที่เพียงพอ และเรียงลงมาในหน้าจอแคบ
+
+หน้าตา Local mode เป็นข้อมูลประกอบการใช้งาน สิทธิ์จริงยังตรวจจาก [workspace policy](access-control.md) การเปิด Team mode ไม่ลบบัญชีเดิม และยังต้องใช้ development runtime
+
+### Team mode: จัดการบัญชี
+
 - Login/Logout ผ่าน session
 - Admin เพิ่มบัญชีและเลือก Viewer / Developer / Admin ได้
 - Admin เปลี่ยน role และ Active state ของบัญชีได้
@@ -106,7 +123,7 @@ Protected development API จะตอบ 401 หากไม่มี session �
 - Remote deployment, TLS สำหรับหน้าเว็บ, distributed sessions และ shared database
 - การบังคับ auth กับ backend request ที่ไหลผ่าน listener: ระบบนี้คุม management/inspection API ไม่ได้เพิ่ม authentication ให้ application routes
 - Packaged desktop/native Tauri commands และ static web deployment ยังไม่ได้เชื่อมระบบบัญชีนี้
-- ยังไม่ได้ทำ browser visual QA หรือ platform certification สำหรับ Windows/Linux
+- หน้า Management ใน Local mode ตรวจหน้าตาและการเปิดคำแนะนำผ่านเบราว์เซอร์แล้ว ส่วน Team flows และ native Windows/Linux ยังไม่ได้ทำ visual QA/platform certification ครบทุกกรณี
 
 ## ตรวจสอบ
 

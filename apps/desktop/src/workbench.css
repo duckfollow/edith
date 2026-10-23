@@ -2627,3 +2627,191 @@ tbody tr.selected {
     gap: 12px;
   }
 }
+
+/* System proxy: one primary switch, with recovery and diagnostics nearby. */
+.system-proxy-card {
+  margin: 16px 0 0;
+  padding: 20px;
+  border: 1px solid var(--gh-border);
+  border-radius: 12px;
+  background: var(--gh-bg);
+}
+.system-proxy-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.system-proxy-heading h3 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+#tool-network .system-proxy-heading p {
+  margin: 7px 0 0;
+  color: var(--gh-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.system-proxy-badge {
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: var(--gh-subtle);
+  color: var(--gh-muted);
+  font-size: 10px;
+  font-weight: 500;
+}
+.system-proxy-card[data-active="true"] .system-proxy-badge {
+  background: #3fb9501a;
+  color: #3fb950;
+}
+.system-proxy-switch {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  padding: 6px 0;
+  cursor: pointer;
+}
+.system-proxy-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  inset: 0;
+  cursor: inherit;
+}
+.system-proxy-switch > span {
+  width: 44px;
+  height: 26px;
+  border-radius: 20px;
+  background: #484f58;
+  pointer-events: none;
+  transition: background 160ms ease;
+}
+.system-proxy-switch > span::after {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 20px;
+  margin: 3px;
+  border-radius: 50%;
+  background: #f0f6fc;
+  box-shadow: 0 1px 3px #0003;
+  transition: transform 160ms ease;
+}
+.system-proxy-switch input:checked + span { background: #238636; }
+.system-proxy-switch input:checked + span::after { transform: translateX(18px); }
+.system-proxy-switch input:focus-visible + span { outline: 2px solid var(--gh-blue); outline-offset: 4px; }
+.system-proxy-switch input:disabled + span { opacity: 0.4; }
+.system-proxy-switch:has(input:disabled) { cursor: not-allowed; }
+.system-proxy-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+.system-proxy-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--gh-muted);
+  font-size: 11px;
+}
+.system-proxy-toolbar select {
+  max-width: 240px;
+  min-width: 120px;
+  padding: 7px 10px;
+  border: 1px solid var(--gh-border);
+  border-radius: 6px;
+  background: var(--gh-subtle);
+  color: var(--gh-text);
+  font: inherit;
+}
+.system-proxy-toolbar button { margin-left: auto; font-size: 10px; }
+#tool-network .system-proxy-help,
+#tool-network .system-proxy-details p {
+  margin: 12px 0 0;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--gh-muted);
+  overflow-wrap: anywhere;
+}
+.system-proxy-details { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--gh-border); }
+.system-proxy-details summary { color: var(--gh-muted); cursor: pointer; font-size: 10px; }
+.system-proxy-details button { margin-top: 10px; }
+@media (prefers-reduced-motion: reduce) {
+  .system-proxy-switch > span,
+  .system-proxy-switch > span::after { transition: none; }
+}
+
+/* Proxy settings workspace */
+.proxy-settings-shell > summary { padding: 18px 22px; font-size: 12px; font-weight: 600; }
+.proxy-settings-shell > summary > small { font-weight: 400; }
+.proxy-settings-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); border-top: 1px solid var(--gh-border); }
+.proxy-settings-nav { display: flex; flex-direction: column; gap: 6px; padding: 16px 12px; background: var(--gh-surface); border-right: 1px solid var(--gh-border); }
+.proxy-settings-nav button { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 12px; text-align: left; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--gh-muted); white-space: normal; }
+.proxy-settings-nav button strong { font-size: 11px; font-weight: 550; }
+.proxy-settings-nav button small { font-size: 10px; font-weight: 400; line-height: 1.5; }
+.proxy-settings-nav button[aria-selected="true"] { background: var(--gh-bg); border-color: var(--gh-border); color: var(--gh-text); box-shadow: inset 3px 0 #3fb950; }
+.proxy-settings-nav button:hover { background: var(--gh-subtle); }
+.proxy-settings-nav button:focus-visible { outline: 2px solid var(--gh-blue); outline-offset: 2px; }
+.proxy-settings-content { min-width: 0; padding: 24px; background: var(--gh-bg); }
+.proxy-settings-content [role="tabpanel"][hidden] { display: none; }
+.proxy-settings-content .proxy-connection-card,
+.proxy-settings-content .proxy-inspection-card,
+.proxy-settings-content .proxy-certificate-card { padding: 0; background: transparent; border: 0; }
+.proxy-settings-content .proxy-settings-title { margin-bottom: 22px; }
+.proxy-settings-content .proxy-settings-title h3 { font-size: 15px; margin-bottom: 8px; }
+#tool-network .proxy-settings-content .proxy-settings-title p { font-size: 11px; }
+.proxy-settings-content .proxy-connection-fields { gap: 16px; }
+.proxy-settings-content .proxy-connection-fields > code { margin-left: auto; }
+.proxy-settings-content .proxy-connection-fields > [role="status"] { flex-basis: 100%; }
+.proxy-settings-content .system-proxy-card { margin-top: 24px; padding: 20px; background: var(--gh-surface); }
+.proxy-settings-content .proxy-option-row { padding: 16px 0; }
+.proxy-settings-content .proxy-option-row strong { font-size: 12px; }
+.proxy-settings-content .proxy-domain-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 24px; }
+.proxy-settings-content .proxy-domain-fields textarea { box-sizing: border-box; width: 100%; min-height: 112px; padding: 12px; border: 1px solid var(--gh-border); border-radius: 8px; background: var(--gh-surface); color: var(--gh-text); resize: vertical; }
+.proxy-toggle-control { position: relative; flex: 0 0 40px; width: 40px; height: 24px; }
+.proxy-option-row .proxy-toggle-control input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.proxy-toggle-control > span { display: block; width: 40px; height: 24px; border-radius: 20px; background: #484f58; pointer-events: none; transition: background 160ms ease; }
+.proxy-toggle-control > span::after { content: ""; display: block; width: 18px; height: 18px; position: relative; top: 3px; left: 3px; border-radius: 50%; background: #f0f6fc; transition: transform 160ms ease; }
+.proxy-toggle-control input:checked + span { background: #238636; }
+.proxy-toggle-control input:checked + span::after { transform: translateX(16px); }
+.proxy-toggle-control input:disabled + span { opacity: 0.4; }
+.proxy-toggle-control input:disabled { cursor: not-allowed; }
+.proxy-toggle-control input:focus-visible + span { outline: 2px solid var(--gh-blue); outline-offset: 3px; }
+.proxy-settings-content .proxy-setting-chip { background: var(--gh-subtle); padding: 4px 8px; border-radius: 5px; }
+.proxy-settings-content .proxy-ca-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+@media (max-width: 900px) {
+  .proxy-settings-layout { grid-template-columns: 1fr; }
+  .proxy-settings-nav { flex-direction: row; border-right: 0; border-bottom: 1px solid var(--gh-border); }
+  .proxy-settings-nav button { flex: 1; padding: 10px; }
+  .proxy-settings-nav button small { display: none; }
+  .proxy-settings-content { padding: 18px; }
+  .proxy-settings-content .proxy-domain-fields { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .proxy-toggle-control > span,
+  .proxy-toggle-control > span::after { transition: none; }
+}
+
+.system-proxy-auto {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gh-border);
+  cursor: pointer;
+}
+.system-proxy-auto input { accent-color: var(--gh-green); flex-shrink: 0; }
+.system-proxy-auto > span { display: flex; flex-direction: column; gap: 5px; }
+.system-proxy-auto strong { font-size: 11px; font-weight: 500; }
+.system-proxy-auto small { font-size: 10px; color: var(--gh-muted); }
+.system-proxy-auto:has(input:disabled) { opacity: 0.55; cursor: not-allowed; }

@@ -45,7 +45,9 @@ Filter captured requests by Gateway, route, status, and method.
 
 Access control supports a [local workspace policy](docs/access-control.md) and optional [Team accounts with session-based roles](docs/accounts.md). Both currently apply to the development runtime.
 
-Latest: [HTTPS inspection — 23 October 2026](docs/updates-2026-10-23.md).
+Latest: [Management, Proxy settings, and app icons — 24 October 2026](docs/updates-2026-10-24.md).
+
+Previous: [HTTPS inspection — 23 October 2026](docs/updates-2026-10-23.md).
 
 Earlier development notes: [20–21 October 2026 updates](docs/updates-2026-10-21.md).
 
@@ -59,6 +61,10 @@ Implemented:
 
 - Optional Team mode with first-Admin setup, Login/Logout, account creation, role changes, account deactivation, and session revocation.
 - Account management with account totals, active/Admin counts, username search, role filters, and an Add account panel. A unified top bar shows the workspace and a single account identity; click it to open Management.
+
+- Local-mode Management with **Workspace & access**, a Local owner card, Network shortcut, and expandable Team setup instructions with a copyable command. See [Accounts and Management](docs/accounts.md).
+
+- Proxy settings grouped into Connection, HTTPS inspection, and Certificate tabs. macOS desktop development supports an optional System Proxy switch, saved-setting recovery, and automatic enabling after Start. HTTPS inspection preferences are remembered locally; certificate trust remains manual. See [the proxy guide](docs/proxy-user-guide.md).
 
 - Gateway setup editor with a custom HTML/SVG canvas: route/backend connections, local save, and JSON export. Run up to 8 loopback HTTP Gateways with independent routes and Start/Stop in development; inspect traffic by Gateway and route.
 

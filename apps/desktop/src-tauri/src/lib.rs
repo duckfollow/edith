@@ -1,4 +1,5 @@
 mod system_monitor;
+mod system_proxy;
 use serde::Serialize;
 use std::sync::Mutex;
 use system_monitor::{SystemSampler, SystemSnapshot};
@@ -44,7 +45,11 @@ fn sample_system_metrics(
 pub fn run() {
     tauri::Builder::default()
         .manage(Mutex::new(SystemSampler::default()))
+        .manage(system_proxy::ProxyLock(Mutex::new(())))
         .invoke_handler(tauri::generate_handler![
+            system_proxy::system_proxy_status,
+            system_proxy::system_proxy_read,
+            system_proxy::system_proxy_change,
             list_interfaces,
             sample_system_metrics
         ])

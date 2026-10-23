@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { runDevelopment } from './dev-process.mjs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,10 +8,7 @@ const team=args.includes('--team');
 const mode=team?'team':'local';
 const vite=join(dirname(require.resolve('vite/package.json')),'bin/vite.js');
 console.log(`Starting EDITH in ${mode} mode`);
-const child=spawn(process.execPath,[vite,'--host','127.0.0.1',...args.filter(arg=>arg!=='--team')],{
+runDevelopment(process.execPath,[vite,'--host','127.0.0.1',...args.filter(arg=>arg!=='--team')],{
  cwd:fileURLToPath(new URL('../apps/desktop/',import.meta.url)),
  env:{...process.env,EDITH_MODE:mode},stdio:'inherit',
 });
-child.on('error',error=>{console.error(`Unable to start EDITH: ${error.message}`);process.exitCode=1;});
-for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{if(!child.killed)child.kill(process.platform==='win32'?'SIGTERM':signal);});
-child.on('exit',(code,signal)=>{process.exitCode=code ?? (signal==='SIGINT'?130:1);});

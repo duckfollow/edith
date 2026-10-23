@@ -17,7 +17,7 @@ await loading.waitForMinimum();
 loading.destroy();
 ```
 
-Use `compact: true` for an inline button spinner with a label. Callers own operation state, cancellation, error messages and disabling controls. The optional `minimumDurationMs` defaults to 0. Await `waitForMinimum()` before removing or replacing the loader; it waits only for the remaining time, so slower operations receive no extra delay. `destroy()` still removes immediately. React callers can append its element to a ref container and call destroy from effect cleanup.
+Use `compact: true` for smaller inline letter tiles inside a button. Labels are exposed through the loader's accessible name rather than visible text. Callers own operation state, cancellation, error messages and disabling controls. The optional `minimumDurationMs` defaults to 0. Await `waitForMinimum()` before removing or replacing the loader; it waits only for the remaining time, so slower operations receive no extra delay. `destroy()` still removes immediately. React callers can append its element to a ref container and call destroy from effect cleanup.
 
 ## Login integration
 
