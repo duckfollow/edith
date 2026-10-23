@@ -519,9 +519,11 @@ function showHttp(entry: HttpEntry) {
             ? `Reported by the connected app SDK. Duration measures fetch until response headers. ${entry.error || "Bodies require explicit captureBodies opt-in."}`
             : entry.captureKind === "tunnel"
               ? "HTTPS tunnel only. Status is the tunnel establishment result; duration is connection setup, not an HTTPS response. No encrypted payload is inspected."
-              : entry.captureKind === "http"
-                ? `Captured through the local proxy. ${entry.error || "HTTP forwarded to its upstream destination."}`
-                : "Imported HAR metadata. No requests are replayed or sent.",
+              : entry.captureKind === "https"
+                ? `HTTPS decrypted for an explicitly selected domain. ${entry.error || "Upstream certificate verification remains enabled."}`
+                : entry.captureKind === "http"
+                  ? `Captured through the local proxy. ${entry.error || "HTTP forwarded to its upstream destination."}`
+                  : "Imported HAR metadata. No requests are replayed or sent.",
         "wb-footnote",
       ),
     );
@@ -772,7 +774,7 @@ const liveProxy = mountLiveProxy(network, {
     httpSource = `Local proxy · ${status.state}${status.port ? ` · 127.0.0.1:${status.port}` : ""}`;
     setSource(
       network,
-      `${httpSource} · ${status.total} captured · up to 256 retained · HTTPS tunnels are metadata only`,
+      `${httpSource} · ${status.total} captured · up to 256 retained · ${status.inspection?.enabled ? "Selected HTTPS domains inspected" : "HTTPS tunnels are metadata only"}`,
     );
     within<HTMLButtonElement>(network, '[data-action="demo"]').disabled =
       status.state === "running";

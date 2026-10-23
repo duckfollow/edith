@@ -1,5 +1,7 @@
 # Machine-local development CA
 
+Step-by-step Thai guide: [Proxy setup and usage](proxy-user-guide.md), including macOS Keychain errors and media troubleshooting.
+
 Create a CA on each development machine:
 
 ```sh
@@ -12,7 +14,7 @@ Files are created under the Git-ignored `.local/ca/`:
 
 - `edith-debug-ca.cert.pem`: public certificate in PEM format.
 - `edith-debug-ca.cer`: the same public certificate in DER format, suitable for certificate import tools.
-- `edith-debug-ca.key.pem`: private signing key, unencrypted for a future local proxy, with owner-only filesystem permissions on this machine.
+- `edith-debug-ca.key.pem`: private signing key, unencrypted for the opt-in local inspection proxy, with owner-only filesystem permissions on this machine.
 - `metadata.json`: public identity, fingerprint, validity, and generation-time status.
 - `openssl.cnf`: generation configuration.
 
@@ -22,7 +24,7 @@ Existing CA directories are never overwritten or rotated automatically. Rerunnin
 
 ## Current boundary
 
-Generating this CA **does not install or trust it**, and does not enable HTTPS interception. The current proxy still forwards encrypted CONNECT tunnels. A future implementation must issue server certificates for explicitly inspected hosts, use the local signing key, verify upstream TLS normally, and offer clear enable/disable and certificate removal paths. Do not disable upstream certificate verification.
+Generating this CA **does not install or trust it**, and does not enable interception by itself. The proxy now has optional [HTTPS inspection](https-inspection.md): enable it, specify exact hostnames, and Start the proxy after manually configuring client trust. It issues short-lived leaf certificates and verifies upstream TLS normally. No upstream certificate bypass is provided.
 
 There is no automatic trust-store modification in the script. The public CA import and trust decision remain a separate step. This CA is for local development testing, not a production public certificate authority.
 

@@ -1,8 +1,10 @@
 # Live Network Inspector: local proxy
 
+Step-by-step Thai guide: [Proxy setup and usage](proxy-user-guide.md), including macOS Keychain errors and media troubleshooting.
+
 ## What works
 
-The Vite development workspace can start a real loopback HTTP forwarding proxy directly from Network Inspector. Requests routed through it appear automatically without importing a file. It captures HTTP request/response headers, body previews, status, and elapsed time. HTTPS CONNECT is forwarded as an opaque tunnel, with destination and connection setup status/timing only.
+The Vite development workspace can start a real loopback HTTP forwarding proxy directly from Network Inspector. Requests routed through it appear automatically without importing a file. It captures HTTP request/response headers, body previews, status, and elapsed time. HTTPS CONNECT is opaque by default, with destination and setup metadata only. Optional [HTTPS inspection](https-inspection.md) decrypts exact allowlisted domains using the local CA.
 
 This is a **development-runtime feature**. It works with `npm run dev:web --workspace appsdesktop` and the Vite-backed Tauri development window. The helper is not yet packaged into desktop release installers. A standalone production web build has no proxy backend and reports that the local service is unavailable. Native release support needs a packaged runtime/sidecar or Rust implementation and platform validation.
 
@@ -25,7 +27,7 @@ Only clients that honor the explicit proxy configuration appear. EDITH does not 
 
 - HTTP is forwarded upstream as a real request; requests are not mocked or replayed.
 - HTTPS CONNECT supports destination port 443. Its status 200 means **tunnel established**, not HTTP 200 from the encrypted endpoint. Duration is connection setup only; size is zero because tunnel payload is not inspected.
-- No TLS MITM, trust-store change, certificate bypass, HTTPS body capture, WebSocket inspection, or HTTP/2 decoding is implemented.
+- Opt-in TLS inspection supports exact DNS hosts on port 443 and HTTP/1.1. There are no automatic trust-store changes, upstream certificate bypass, WebSocket inspection, or HTTP/2 decoding.
 - Upgraded connections are rejected. The proxy handles HTTP/1.x forwarding through Node's HTTP library.
 - HTTP bodies are streamed to the client unchanged. Capture previews retain only the first 32 KB for each body. Binary and compressed bodies are shown as base64 without decompression. Request encoding and truncation are labeled.
 - Timings are measured locally: total elapsed HTTP forwarding or CONNECT setup. DNS/TLS phases are not inferred.

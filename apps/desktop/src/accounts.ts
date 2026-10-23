@@ -97,7 +97,84 @@ export function mountAccounts(section: HTMLElement) {
         location.reload();
       },
     );
-    dialog.append(h, p, f);
+    const brand = document.createElement("div");
+    brand.className = "account-login-brand";
+    const mark = document.createElement("span");
+    mark.textContent = "E";
+    mark.className = "account-login-mark";
+    const brandText = document.createElement("div");
+    brandText.innerHTML =
+      "<strong>EDITH</strong><span>DEVELOPER WORKSPACE</span>";
+    brand.append(mark, brandText);
+    const mode = document.createElement("span");
+    mode.className = "account-login-mode";
+    mode.append(
+      icon("shield"),
+      document.createTextNode(initialized ? "Team access" : "First-time setup"),
+    );
+    const intro = document.createElement("div");
+    intro.className = "account-login-intro";
+    intro.append(mode, h, p);
+    h.textContent = initialized
+      ? "Sign in to your workspace"
+      : "Set up your workspace";
+    const username = f.querySelector<HTMLInputElement>(
+      'input[name="username"]',
+    )!;
+    username.placeholder = "Your username";
+    username.autocapitalize = "none";
+    username.spellcheck = false;
+    username.autofocus = true;
+    const password = f.querySelector<HTMLInputElement>(
+      'input[name="password"]',
+    )!;
+    password.placeholder = initialized
+      ? "Enter your password"
+      : "At least 12 characters";
+    const passwordWrap = document.createElement("div");
+    passwordWrap.className = "account-password-field";
+    password.before(passwordWrap);
+    passwordWrap.append(password);
+    const reveal = document.createElement("button");
+    reveal.type = "button";
+    reveal.className = "account-password-toggle";
+    reveal.setAttribute("aria-label", "Show password");
+    reveal.setAttribute("aria-pressed", "false");
+    reveal.append(icon("eye"));
+    reveal.onclick = (event) => {
+      event.preventDefault();
+      const visible = password.type === "password";
+      password.type = visible ? "text" : "password";
+      reveal.replaceChildren(icon(visible ? "eyeOff" : "eye"));
+      reveal.setAttribute(
+        "aria-label",
+        visible ? "Hide password" : "Show password",
+      );
+      reveal.setAttribute("aria-pressed", String(visible));
+    };
+    passwordWrap.append(reveal);
+    const caps = document.createElement("small");
+    caps.className = "account-caps-warning";
+    caps.hidden = true;
+    caps.textContent = "Caps Lock is on";
+    caps.setAttribute("role", "status");
+    passwordWrap.after(caps);
+    const checkCaps = (event: KeyboardEvent) => {
+      caps.hidden = !event.getModifierState("CapsLock");
+    };
+    password.addEventListener("keydown", checkCaps);
+    password.addEventListener("keyup", checkCaps);
+    const submit = f.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    submit.textContent = initialized ? "Sign in" : "Create workspace owner";
+    const footer = document.createElement("div");
+    footer.className = "account-login-footer";
+    footer.append(icon("shield"));
+    const help = document.createElement("p");
+    help.textContent = initialized
+      ? "Need an account? Ask your workspace Admin."
+      : "Your first account receives Admin access. Keep the setup token private.";
+    footer.append(help);
+    dialog.append(brand, intro, f, footer);
     document.body.append(dialog);
     dialog.showModal();
   }

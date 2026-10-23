@@ -380,3 +380,198 @@
     flex-basis: 100%;
   }
 }
+/* Sign-in and first-owner setup share a single, quiet surface. */
+.account-login {
+  width: min(420px, calc(100vw - 32px));
+  padding: 30px;
+  border-radius: 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  box-shadow: 0 24px 100px #0008;
+}
+.account-login::backdrop {
+  background: #010409ed;
+  backdrop-filter: blur(5px);
+}
+.account-login-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 32px;
+}
+.account-login-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: #e6edf3;
+  color: #0d1117;
+  font-size: 23px;
+  font-weight: 700;
+}
+.account-login-brand > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.account-login-brand strong {
+  font-size: 17px;
+  letter-spacing: 1.7px;
+}
+.account-login-brand > div > span {
+  font-size: 8px;
+  letter-spacing: 1.8px;
+  color: #8b949e;
+}
+.account-login-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: #8b949e;
+}
+.account-login-mode svg {
+  width: 12px;
+  height: 12px;
+}
+.account-login-intro h2 {
+  font-size: 23px;
+  letter-spacing: -0.6px;
+  line-height: 1.25;
+  margin: 11px 0 10px;
+  font-weight: 600;
+}
+.account-login-intro > p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #8b949e;
+  margin: 0 0 26px;
+}
+.account-login .account-form {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  gap: 18px;
+  max-width: none;
+}
+.account-login .account-form label {
+  font-size: 11px;
+  gap: 8px;
+  color: #c9d1d9;
+}
+.account-login .account-form input {
+  height: 42px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 6px;
+  background: #010409;
+  border-color: #30363d;
+  font:
+    13px -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+.account-login input::placeholder {
+  color: #6e7681;
+}
+.account-login .account-form input:focus-visible {
+  outline: 2px solid #58a6ff;
+  outline-offset: 2px;
+  border-color: #58a6ff;
+}
+.account-password-field {
+  position: relative;
+}
+.account-login .account-password-field input {
+  padding-right: 43px;
+}
+.account-login .account-password-toggle {
+  display: grid;
+  place-items: center;
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #8b949e;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.account-login .account-password-toggle:hover {
+  background: #21262d;
+  color: #e6edf3;
+}
+.account-password-toggle svg {
+  width: 16px;
+  height: 16px;
+}
+.account-login .account-form button[type="submit"] {
+  height: 42px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  margin-top: 3px;
+  background: #238636;
+  border-color: #2ea043;
+  color: #fff;
+}
+.account-login .account-form button[type="submit"]:hover:not(:disabled) {
+  background: #2ea043;
+}
+.account-login .account-form button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.account-login .account-form > p:empty {
+  display: none;
+}
+.account-login .account-form > p:not(:empty) {
+  padding: 10px 12px;
+  background: #f8514910;
+  border: 1px solid #f8514944;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #ff7b72;
+  line-height: 1.6;
+}
+.account-caps-warning {
+  font-size: 10px;
+  color: #d29922;
+}
+.account-login-footer {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #21262d;
+  color: #6e7681;
+}
+.account-login-footer > svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.account-login-footer p {
+  font-size: 10px;
+  line-height: 1.7;
+  margin: 0;
+}
+@media (max-width: 480px) {
+  .account-login {
+    padding: 24px;
+  }
+  .account-login-intro h2 {
+    font-size: 21px;
+  }
+  .account-login-brand {
+    margin-bottom: 26px;
+  }
+}

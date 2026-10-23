@@ -2253,3 +2253,377 @@ tbody tr.selected {
     gap: 0;
   }
 }
+.proxy-tls-details > summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.proxy-tls-details > summary small {
+  font-size: 10px;
+  color: var(--gh-blue);
+}
+.proxy-tls-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0;
+  font-size: 12px;
+}
+.proxy-tls-toggle input {
+  accent-color: var(--gh-green);
+}
+.proxy-tls-domains {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--gh-muted);
+}
+.proxy-tls-domains textarea {
+  width: 100%;
+  max-width: 600px;
+  resize: vertical;
+  border: 1px solid var(--gh-border);
+  background: var(--gh-bg);
+  color: var(--gh-text);
+  border-radius: 6px;
+  padding: 10px;
+  font:
+    12px ui-monospace,
+    monospace;
+}
+.proxy-ca-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.proxy-ca-actions a {
+  font-size: 11px;
+  color: var(--gh-blue);
+}
+.proxy-tls-details [data-proxy="ca-state"] {
+  overflow-wrap: anywhere;
+  font:
+    10px/1.8 ui-monospace,
+    monospace;
+}
+.proxy-tls-details details summary {
+  font-size: 11px;
+  color: var(--gh-muted);
+  cursor: pointer;
+}
+/* Proxy settings: one entry point, three clearly separated configuration areas. */
+#tool-network .wb-proxy-panel {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 9px;
+}
+#tool-network .wb-proxy-heading {
+  padding: 17px 20px;
+}
+.proxy-runtime-badge {
+  font-size: 10px;
+  white-space: nowrap;
+  color: var(--gh-muted);
+  border: 1px solid var(--gh-border);
+  border-radius: 12px;
+  padding: 4px 9px;
+  margin-right: 6px;
+}
+[data-state="running"] .proxy-runtime-badge {
+  color: var(--gh-green);
+  border-color: #265f36;
+  background: #122019;
+}
+.proxy-settings-shell {
+  border-top: 1px solid var(--gh-border);
+}
+.proxy-settings-shell > summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 13px 20px;
+  background: var(--gh-bg);
+  font-size: 11px;
+}
+.proxy-settings-shell > summary > span::before {
+  content: "›";
+  margin-right: 10px;
+  color: var(--gh-muted);
+}
+.proxy-settings-shell[open] > summary > span::before {
+  content: "⌄";
+}
+.proxy-settings-shell > summary > small {
+  font-size: 10px;
+  color: var(--gh-muted);
+}
+.proxy-connection-card {
+  padding: 21px;
+  border-bottom: 1px solid var(--gh-border);
+}
+.proxy-settings-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 19px;
+}
+.proxy-step {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  background: var(--gh-subtle);
+  border: 1px solid var(--gh-border);
+  border-radius: 6px;
+  color: var(--gh-muted);
+  font:
+    10px ui-monospace,
+    monospace;
+}
+.proxy-settings-title > div {
+  flex: 1;
+}
+.proxy-settings-title h3 {
+  font-size: 12px;
+  margin: 1px 0 5px;
+  font-weight: 600;
+}
+#tool-network .proxy-settings-title p {
+  font-size: 10px;
+  margin: 0;
+  color: var(--gh-muted);
+  line-height: 1.6;
+}
+.proxy-connection-fields {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.proxy-connection-fields > label {
+  font-size: 10px;
+  color: var(--gh-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.proxy-address-input {
+  display: flex;
+  align-items: center;
+  background: var(--gh-bg);
+  border: 1px solid var(--gh-border);
+  border-radius: 6px;
+  padding-left: 11px;
+  gap: 7px;
+}
+.proxy-address-input > span {
+  font:
+    12px ui-monospace,
+    monospace;
+  color: var(--gh-muted);
+}
+.proxy-address-input input {
+  border: 0;
+  background: transparent;
+  width: 85px;
+  padding: 9px 8px;
+  color: var(--gh-text);
+  font:
+    12px ui-monospace,
+    monospace;
+}
+.proxy-address-input:focus-within {
+  outline: 2px solid var(--gh-blue);
+  outline-offset: 2px;
+}
+.proxy-address-input input:focus-visible {
+  outline: none;
+}
+.proxy-connection-fields > code {
+  font-size: 11px;
+  background: var(--gh-bg);
+  padding: 7px 10px;
+  border-radius: 5px;
+  color: var(--gh-text);
+}
+.proxy-connection-fields > [role="status"] {
+  font-size: 10px;
+  color: var(--gh-muted);
+  line-height: 1.6;
+  flex: 1;
+  min-width: 180px;
+}
+.proxy-example {
+  margin-top: 17px;
+}
+.proxy-example summary,
+.proxy-trust-guide summary {
+  font-size: 11px;
+  color: var(--gh-blue);
+  cursor: pointer;
+}
+.proxy-settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+}
+.proxy-inspection-card,
+.proxy-certificate-card {
+  padding: 22px;
+  min-width: 0;
+  background: var(--gh-bg);
+}
+.proxy-inspection-card {
+  border-right: 1px solid var(--gh-border);
+}
+.proxy-setting-chip {
+  font-size: 9px;
+  color: var(--gh-blue);
+  text-align: right;
+  max-width: 130px;
+  line-height: 1.6;
+}
+.proxy-option-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gh-border);
+}
+.proxy-option-row > span {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.proxy-option-row strong {
+  font-size: 11px;
+  font-weight: 500;
+}
+.proxy-option-row small {
+  font-size: 10px;
+  color: var(--gh-muted);
+  line-height: 1.5;
+}
+.proxy-option-row input {
+  accent-color: var(--gh-green);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.proxy-domain-fields {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+.proxy-domain-fields .proxy-tls-domains {
+  font-size: 11px;
+}
+.proxy-domain-fields small {
+  font-size: 9px;
+  line-height: 1.6;
+  color: var(--gh-muted);
+}
+.proxy-domain-fields textarea {
+  max-width: none;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.proxy-domain-fields .is-inactive {
+  opacity: 0.5;
+}
+#tool-network .proxy-privacy-note {
+  padding: 10px 12px;
+  border: 1px solid #6e542c;
+  border-radius: 6px;
+  color: #d29922;
+  background: #d2992208;
+  font-size: 10px;
+  line-height: 1.7;
+  margin: 18px 0 0;
+}
+#tool-network .proxy-ca-status {
+  font-size: 11px;
+  color: var(--gh-muted);
+  line-height: 1.7;
+}
+.proxy-ca-status.is-ready {
+  color: var(--gh-green) !important;
+}
+.proxy-ca-metadata {
+  display: block;
+  margin: 18px 0;
+  border: 1px solid var(--gh-border);
+  border-radius: 6px;
+  padding: 13px;
+  background: var(--gh-surface);
+}
+.proxy-ca-metadata dt {
+  font-size: 9px;
+  color: var(--gh-muted);
+  margin-bottom: 7px;
+}
+.proxy-ca-metadata dd {
+  font:
+    10px/1.8 ui-monospace,
+    monospace;
+  color: var(--gh-text);
+  overflow-wrap: anywhere;
+  margin: 0 0 13px;
+}
+.proxy-ca-metadata dd:last-child {
+  margin-bottom: 0;
+}
+.proxy-ca-actions a {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 11px;
+  border: 1px solid var(--gh-border);
+  border-radius: 6px;
+  text-decoration: none;
+  background: var(--gh-subtle);
+}
+.proxy-trust-guide {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gh-border);
+}
+.proxy-trust-guide ol {
+  padding-left: 18px;
+  font-size: 11px;
+  line-height: 1.9;
+  color: var(--gh-muted);
+}
+.proxy-settings-footer {
+  padding: 13px 21px;
+  border-top: 1px solid var(--gh-border);
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--gh-muted);
+  background: var(--gh-surface);
+}
+@media (max-width: 1000px) {
+  .proxy-settings-grid {
+    grid-template-columns: 1fr;
+  }
+  .proxy-inspection-card {
+    border-right: 0;
+    border-bottom: 1px solid var(--gh-border);
+  }
+}
+@media (max-width: 650px) {
+  .proxy-settings-shell > summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .proxy-runtime-badge {
+    margin-right: 0;
+  }
+  .proxy-connection-fields {
+    gap: 12px;
+  }
+}

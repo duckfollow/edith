@@ -45,7 +45,9 @@ Filter captured requests by Gateway, route, status, and method.
 
 Access control supports a [local workspace policy](docs/access-control.md) and optional [Team accounts with session-based roles](docs/accounts.md). Both currently apply to the development runtime.
 
-Latest development notes: [20–21 October 2026 updates](docs/updates-2026-10-21.md).
+Latest: [HTTPS inspection — 23 October 2026](docs/updates-2026-10-23.md).
+
+Earlier development notes: [20–21 October 2026 updates](docs/updates-2026-10-21.md).
 
 **Early development — file-based debugging tools with a sample packet explorer. A live local HTTP proxy is available in the development runtime. A JavaScript SDK connects fetch, logs, and errors in development. OS packet capture is not implemented.**
 
@@ -67,7 +69,7 @@ Implemented:
 - Opt-in JavaScript SDK with pairing, app selection, fetch instrumentation, and live logs/errors.
 
 - Flipper-inspired workbench with Network, Logs, Storage, and Packets tools.
-- Live local HTTP proxy with request/response inspection, plus HTTPS CONNECT destination metadata (development runtime).
+- Live local HTTP proxy with request/response inspection, plus opt-in HTTPS inspection for selected/all DNS hosts with exact exclusions, plus opaque CONNECT metadata for uninspected hosts (development runtime).
 - HAR import with HTTP status/method filters, request/response inspection, and timing details.
 - Text/JSONL log import with severity filters and raw-event inspection.
 - JSON storage snapshot inspection, validated edits in memory, and export.
@@ -82,6 +84,8 @@ Next: package the local proxy for desktop releases, a restricted platform captur
 See [Accounts and Team mode](docs/accounts.md), [Gateway](docs/gateway.md), [System Monitor](docs/system-monitor.md), [Overview and graphs](docs/overview.md), [SDK setup and demo](docs/sdk.md), [live proxy setup](docs/local-proxy.md), [debug tools and sample files](docs/debug-tools.md), [product scope and architecture](docs/network-monitor.md) and [development setup](docs/development.md).
 
 ## Running EDITH
+
+**คู่มือตั้งค่าและใช้งาน Proxy (ภาษาไทย):** [macOS Wi-Fi proxy, CA trust, HTTPS inspection, exclusions, and troubleshooting](docs/proxy-user-guide.md).
 
 Install dependencies once, then start from the repository root:
 
@@ -133,7 +137,7 @@ Open **http://127.0.0.1:1420/** and keep the terminal running. Stop it with **Ct
 
 - **Overview, Network, Logs, and Storage:** import files or click **Load demo** for synthetic data.
 - **System Monitor:** displays real CPU/RAM of the machine running the development server.
-- **Live HTTP proxy:** in Network, click **Start proxy**, then [configure a test app to use it](docs/local-proxy.md). The default address is `127.0.0.1:8899`; requests are not routed there automatically. HTTPS currently shows CONNECT tunnel metadata, without decrypted contents.
+- **Live HTTP proxy:** in Network, click **Start proxy**, then [configure a test app to use it](docs/local-proxy.md). The default address is `127.0.0.1:8899`; requests are not routed there automatically. HTTPS is opaque by default. Optional [HTTPS inspection](docs/https-inspection.md) exposes selected domains after manually trusting the local CA.
 - **SDK connection:** enable the receiver and connect a development app using the [SDK instructions](docs/sdk.md).
 - **Packets:** **Start sample** generates sample packets. Live OS packet capture is not implemented.
 

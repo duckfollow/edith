@@ -1,3 +1,6 @@
+import https from "node:https";
+import tls from "node:tls";
+import { inspectionSettings, shouldInspectHost } from "./https-inspector.mjs";
 import http from "node:http";
 import net from "node:net";
 import { randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
@@ -77,6 +80,8 @@ function json(res, status, value) {
 export function createLocalProxy({
   controlOrigin = "http://127.0.0.1:1420",
   dial = net.connect,
+  inspector,
+  secureRequest = https.request,
 } = {}) {
   const authority = new URL(controlOrigin).host;
   const controlUrl = new URL(controlOrigin);
@@ -97,9 +102,17 @@ export function createLocalProxy({
     pendingStart = null,
     pendingStop = null;
   const sockets = new Set();
+  let inspection = { enabled: false, domains: [] },
+    caStatus = { ready: false, error: "CA service unavailable" };
+
   function snapshot(after = 0) {
     return {
       state,
+      inspection: {
+        ...inspection,
+        enabled: state === "running" && inspection.enabled,
+        ca: caStatus,
+      },
       port,
       sessionId,
       total,
@@ -150,14 +163,35 @@ export function createLocalProxy({
     if ([port, Number(new URL(controlOrigin).port || 80)].includes(targetPort))
       throw new Error("Proxy/control self-targets are not allowed.");
   }
-  function handleHttp(req, res) {
+  function handleHttp(req, res, secureOrigin) {
     const sid = sessionId;
     let target;
     try {
-      target = new URL(req.url || "");
-      if (target.protocol !== "http:" || target.username || target.password)
+      target = secureOrigin
+        ? new URL(req.url || "/", secureOrigin)
+        : new URL(req.url || "");
+      if (
+        secureOrigin &&
+        (!req.url?.startsWith("/") ||
+          req.url.startsWith("//") ||
+          target.origin !== secureOrigin ||
+          ![
+            new URL(secureOrigin).hostname,
+            new URL(secureOrigin).host,
+            new URL(secureOrigin).hostname + ":443",
+          ].includes(String(req.headers.host || "").toLowerCase()))
+      )
+        throw Error("HTTPS request authority must match CONNECT hostname");
+      if (
+        target.protocol !== (secureOrigin ? "https:" : "http:") ||
+        target.username ||
+        target.password
+      )
         throw new Error("Use an absolute http:// URL; HTTPS must use CONNECT.");
-      refuseLoop(target.hostname, Number(target.port || 80));
+      refuseLoop(
+        target.hostname,
+        Number(target.port || (secureOrigin ? 443 : 80)),
+      );
     } catch (error) {
       res.writeHead(400, { "Content-Type": "text/plain", Connection: "close" });
       res.end(error.message);
@@ -168,7 +202,7 @@ export function createLocalProxy({
       res.end("Too many active proxy connections");
       return;
     }
-    const item = entry(req, target.toString()),
+    const item = entry(req, target.toString(), secureOrigin ? "https" : "http"),
       started = performance.now();
     const requestCapture = collector(),
       responseCapture = collector();
@@ -200,9 +234,14 @@ export function createLocalProxy({
     const headers = cleanHeaders(req.headers);
     headers.host = target.host;
     try {
-      upstream = http.request(
+      upstream = (secureOrigin ? secureRequest : http.request)(
         target,
-        { method: req.method, headers, agent: false },
+        {
+          method: req.method,
+          headers,
+          agent: false,
+          ...(secureOrigin ? { ALPNProtocols: ["http/1.1"] } : {}),
+        },
         (response) => {
           track(response.socket);
           item.status = response.statusCode || 502;
@@ -285,6 +324,77 @@ export function createLocalProxy({
       client.end("HTTP/1.1 503 Service Unavailable\r\n\r\n");
       return;
     }
+    if (shouldInspectHost(target.hostname, inspection)) {
+      client.pause();
+      client.setTimeout(60000, () => client.destroy());
+      const started = performance.now();
+      const failTls = (error) => {
+        const item = entry(req, `https://${target.host}/`, "tunnel");
+        item.error = `HTTPS inspection failed: ${error.message}`;
+        item.duration = performance.now() - started;
+        item.mimeType = "application/x-https-inspection-error";
+        add(item, sid);
+        client.destroy();
+      };
+      void inspector
+        .certificate(target.hostname)
+        .then((material) => {
+          if (client.destroyed || state !== "running" || sessionId !== sid)
+            return;
+          const parser = http.createServer(
+            { maxHeaderSize: 16384 },
+            (request, response) =>
+              handleHttp(request, response, `https://${target.hostname}`),
+          );
+          parser.requestTimeout = 60000;
+          parser.headersTimeout = 15000;
+          parser.keepAliveTimeout = 5000;
+          parser.on("upgrade", (_req, socket) =>
+            socket.end(
+              "HTTP/1.1 501 Not Implemented\r\nConnection: close\r\n\r\n",
+            ),
+          );
+          parser.on("connect", (_req, socket) =>
+            socket.end(
+              "HTTP/1.1 405 Method Not Allowed\r\nConnection: close\r\n\r\n",
+            ),
+          );
+          parser.on("clientError", (_error, socket) =>
+            socket.end("HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n"),
+          );
+          const secure = tls.createServer(
+            {
+              key: material.key,
+              cert: material.cert,
+              ALPNProtocols: ["http/1.1"],
+              minVersion: "TLSv1.2",
+              SNICallback: (name, cb) =>
+                name.toLowerCase() === target.hostname
+                  ? cb(null, tls.createSecureContext(material))
+                  : cb(Error("TLS hostname differs from CONNECT target")),
+            },
+            (socket) => {
+              track(socket);
+              socket.setTimeout(30000, () => socket.destroy());
+              parser.emit("connection", socket);
+            },
+          );
+          secure.on("tlsClientError", failTls);
+          client.write("HTTP/1.1 200 Connection Established\r\n\r\n");
+          if (head.length) client.unshift(head);
+          secure.emit("connection", client);
+          client.resume();
+        })
+        .catch((error) => {
+          if (!client.destroyed) {
+            client.end("HTTP/1.1 502 Bad Gateway\r\nConnection: close\r\n\r\n");
+            const item = entry(req, `https://${target.host}/`, "tunnel");
+            item.error = "Certificate preparation failed: " + error.message;
+            add(item, sid);
+          }
+        });
+      return;
+    }
     const item = entry(req, `https://${target.host}/`, "tunnel"),
       started = performance.now();
     let recorded = false;
@@ -323,7 +433,10 @@ export function createLocalProxy({
     client.on("error", () => upstream.destroy());
     upstream.on("close", () => client.destroy());
   }
-  async function start(requestedPort = 8899) {
+  async function start(
+    requestedPort = 8899,
+    requestedInspection = { enabled: false, domains: [] },
+  ) {
     if (state === "running") return snapshot();
     if (pendingStart) return pendingStart;
     if (pendingStop) {
@@ -338,6 +451,8 @@ export function createLocalProxy({
       (requestedPort > 0 && requestedPort < 1024)
     )
       throw new Error("Port must be between 1024 and 65535.");
+    const nextInspection = inspectionSettings(requestedInspection);
+    inspection = nextInspection;
     state = "starting";
     pendingStart = (async () => {
       const instance = http.createServer({ maxHeaderSize: 16384 }, handleHttp);
@@ -356,6 +471,12 @@ export function createLocalProxy({
           socket.end("HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n");
       });
       try {
+        if (inspector) caStatus = await inspector.status();
+        if (nextInspection.enabled && (!inspector || !caStatus.ready))
+          throw Error(
+            caStatus.error ||
+              "Create a valid CA before enabling HTTPS inspection",
+          );
         await new Promise((resolve, reject) => {
           instance.once("error", reject);
           instance.listen(requestedPort, "127.0.0.1", () => {
@@ -397,10 +518,16 @@ export function createLocalProxy({
     state = "stopping";
     const instance = server;
     pendingStop = (async () => {
+      const closing = [...sockets].map((socket) =>
+        socket.closed
+          ? Promise.resolve()
+          : new Promise((resolve) => socket.once("close", resolve)),
+      );
       await new Promise((resolve) => {
         instance.close(resolve);
         for (const socket of sockets) socket.destroy();
       });
+      await Promise.all(closing);
       server = null;
       port = null;
       state = "stopped";
@@ -430,7 +557,25 @@ export function createLocalProxy({
       });
       return;
     }
+    if (req.method === "GET" && route.pathname === "/__edith_proxy/ca") {
+      if (!inspector)
+        return json(res, 503, { error: "CA service unavailable" });
+      try {
+        const cert = await inspector.publicCertificate();
+        res.writeHead(200, {
+          "Content-Type": "application/x-pem-file",
+          "Content-Disposition":
+            'attachment; filename="edith-debug-ca.cert.pem"',
+          "Cache-Control": "no-store",
+        });
+        res.end(cert);
+      } catch {
+        json(res, 404, { error: "Create a CA first" });
+      }
+      return;
+    }
     if (req.method === "GET" && route.pathname === "/__edith_proxy/status") {
+      if (inspector) caStatus = await inspector.status();
       json(res, 200, { ...snapshot(Number.MAX_SAFE_INTEGER), token });
       return;
     }
@@ -445,7 +590,11 @@ export function createLocalProxy({
     }
     if (
       req.method !== "POST" ||
-      !["/__edith_proxy/start", "/__edith_proxy/stop"].includes(route.pathname)
+      ![
+        "/__edith_proxy/start",
+        "/__edith_proxy/stop",
+        "/__edith_proxy/ca/create",
+      ].includes(route.pathname)
     ) {
       json(res, 404, { error: "Unknown proxy action" });
       return;
@@ -469,14 +618,19 @@ export function createLocalProxy({
     try {
       for await (const chunk of req) {
         raw += chunk;
-        if (raw.length > 1024) throw new Error("Control payload too large");
+        if (raw.length > 4096) throw new Error("Control payload too large");
       }
       const input = JSON.parse(raw || "{}");
-      if (route.pathname.endsWith("/start")) {
+      if (route.pathname.endsWith("/ca/create")) {
+        if (state !== "stopped") throw Error("Stop proxy before creating a CA");
+        if (!inspector) throw Error("CA service unavailable");
+        caStatus = await inspector.create();
+        json(res, 200, snapshot());
+      } else if (route.pathname.endsWith("/start")) {
         const requested = input.port ?? 8899;
         if (requested === 0)
           throw new Error("Choose a port between 1024 and 65535.");
-        json(res, 200, await start(requested));
+        json(res, 200, await start(requested, input.inspection));
       } else json(res, 200, await stop());
     } catch (error) {
       json(res, 400, { error: error.message });

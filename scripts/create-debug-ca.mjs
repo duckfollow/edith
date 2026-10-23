@@ -70,7 +70,7 @@ try {
     certificatePath: ".local/ca/edith-debug-ca.cert.pem",
     derCertificatePath: ".local/ca/edith-debug-ca.cer",
     trustedBySystem: false,
-    httpsInspectionImplemented: false,
+    httpsInspectionImplemented: true,
   };
   writeFileSync(
     path.join(directory, "metadata.json"),

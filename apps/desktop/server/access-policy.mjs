@@ -117,6 +117,8 @@ export function createAccessMiddleware({
       return req.method === "GET"
         ? send(200, policy)
         : send(405, { error: "Read-only policy" });
+    if (path === "/__edith_proxy/ca/create" && policy.role !== "admin")
+      return send(403, { error: "Admin required to create CA" });
     // SDK ingestion keeps its own pairing-token validation. Viewing its records is filtered below.
     if (!ingestion && !["GET", "HEAD", "OPTIONS"].includes(req.method)) {
       const allowed = path.startsWith("/__edith_gateway/")

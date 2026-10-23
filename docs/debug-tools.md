@@ -11,7 +11,7 @@ EDITH now has a desktop workbench with Overview, Gateway, System Monitor, Networ
 | Storage | Import a JSON object, search keys/values, validate and apply JSON edits to a snapshot, export the full snapshot                                             | In-memory copy of user-selected JSON or explicit demo                         |
 | Packets | Start/stop generated packets, freeze display, filter/search, inspect metadata, export JSON; native read-only interface discovery                            | Explicit sample generator; native discovery still requires build verification |
 
-The development runtime now supports [live HTTP proxy inspection](local-proxy.md). HTTPS CONNECT remains opaque; TLS payloads shown in HAR come from the exporter. A local JavaScript [SDK](sdk.md) now reports fetch/log/error events for selected app instances. Database, layout, and mobile-device integrations are not implemented.
+The development runtime now supports [live HTTP proxy inspection](local-proxy.md). HTTPS CONNECT remains opaque by default; exact selected domains can use [opt-in HTTPS inspection](https-inspection.md) after manual CA trust. A local JavaScript [SDK](sdk.md) now reports fetch/log/error events for selected app instances. Database, layout, and mobile-device integrations are not implemented.
 
 ## Try it
 

@@ -1,3 +1,4 @@
+import { createHttpsInspector } from "./https-inspector.mjs";
 import { openWorkspaceDatabase } from "./database.mjs";
 import { createAccounts } from "./accounts.mjs";
 import { fileURLToPath } from "node:url";
@@ -56,7 +57,17 @@ export function localProxyPlugin(): Plugin {
           identity: accounts?.identity,
         }),
       );
-      proxy = createLocalProxy({ controlOrigin: `http://127.0.0.1:${port}` });
+      proxy = createLocalProxy({
+        controlOrigin: `http://127.0.0.1:${port}`,
+        inspector: createHttpsInspector({
+          directory: fileURLToPath(
+            new URL("../../../.local/ca/", import.meta.url),
+          ),
+          createScript: fileURLToPath(
+            new URL("../../../scripts/create-debug-ca.mjs", import.meta.url),
+          ),
+        }),
+      });
       gateway = createGatewayManager({
         store: database,
         controlOrigin: `http://127.0.0.1:${port}`,
