@@ -13,6 +13,8 @@ Starting with 0.1.0-alpha.3, the macOS installer runs its own local service. Ope
 
 The current alpha build is ad-hoc signed and has **not been notarized by Apple**. macOS Gatekeeper may display **“Apple could not verify ‘EDITH’ is free of malware”** with **Move to Trash** and **Done** buttons. This means macOS cannot verify the downloaded app; it is not a guarantee that the app is safe.
 
+![macOS Gatekeeper warning: “EDITH” Not Opened, with Move to Trash and Done buttons](images/macos-gatekeeper-edith-not-opened.png)
+
 If you downloaded the intended release from this project's GitHub repository, trust its source, and choose to open it, follow these steps yourself:
 
 1. Click **Done** in the warning.
