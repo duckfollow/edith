@@ -1,3 +1,4 @@
+import { mountAppearance } from "./theme";
 import { mountAccounts } from "./accounts";
 import { workspacePolicy, loadAccessPolicy } from "./access-policy";
 import { mountGateway } from "./gateway";
@@ -140,6 +141,7 @@ let gatewayMounted = false;
 let systemMonitor: ReturnType<typeof mountSystemMonitor> | undefined;
 let overview: ReturnType<typeof mountOverview> | undefined;
 let sdkSelected = false;
+mountAppearance(get(".wb-top-actions"));
 const nav = get("#wb-nav");
 plugins.forEach((plugin) => {
   const button = action("", () => selectTool(plugin.id), "wb-nav-button");

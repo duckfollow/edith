@@ -330,7 +330,7 @@ function Gateway({
       source: "listener",
       target: `route-${r.id}`,
       animated: r.enabled && r.connected && (!!runtime?.running || previewFlow),
-      color: r.enabled ? "#3fb950" : "#484f58",
+      color: r.enabled ? "var(--gh-green)" : "var(--gh-switch-track)",
     },
     ...(r.connected
       ? [
@@ -338,7 +338,7 @@ function Gateway({
             id: `target-${r.id}`,
             source: `route-${r.id}`,
             target: `backend-${r.id}`,
-            color: "#58a6ff",
+            color: "var(--gh-blue)",
             animated: r.enabled && (!!runtime?.running || previewFlow),
           },
         ]

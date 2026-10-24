@@ -2,7 +2,7 @@
   padding: 28px;
   max-width: 1600px;
   margin: auto;
-  color: var(--gh-text, #e6edf3);
+  color: var(--gh-text, var(--gh-text));
 }
 .gw-heading {
   display: flex;
@@ -19,23 +19,23 @@
 .gw-heading p,
 .gw-help,
 .gw-note p {
-  color: var(--gh-muted, #8b949e);
+  color: var(--gh-muted, var(--gh-muted));
   font-size: 13px;
   line-height: 1.6;
 }
 .gw-eyebrow {
   font-size: 10px !important;
   letter-spacing: 2px;
-  color: #3fb950 !important;
+  color: var(--gh-green) !important;
 }
 .gw-badge {
   white-space: nowrap;
-  border: 1px solid #30363d;
+  border: 1px solid var(--gh-border);
   border-radius: 20px;
   padding: 7px 12px;
   font-size: 11px;
-  color: #d29922;
-  background: #161b22;
+  color: var(--gh-warning);
+  background: var(--gh-surface);
 }
 .gw-toolbar {
   display: flex;
@@ -49,13 +49,13 @@
   flex-direction: column;
   gap: 8px;
   font-size: 12px;
-  color: #8b949e;
+  color: var(--gh-muted);
 }
 .gw-page input,
 .gw-page select {
-  background: #0d1117;
-  color: #e6edf3;
-  border: 1px solid #30363d;
+  background: var(--gh-bg);
+  color: var(--gh-text);
+  border: 1px solid var(--gh-border);
   border-radius: 6px;
   padding: 9px;
   font: inherit;
@@ -65,42 +65,43 @@
   width: 110px;
 }
 .gw-page button {
-  background: #21262d;
-  color: #e6edf3;
-  border: 1px solid #30363d;
+  background: var(--gh-subtle);
+  color: var(--gh-text);
+  border: 1px solid var(--gh-border);
   padding: 9px 13px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
 }
 .gw-page button:hover {
-  border-color: #8b949e;
+  border-color: var(--gh-muted);
 }
 .gw-page button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 .gw-toolbar button:nth-of-type(2) {
-  background: #238636;
-  border-color: #3fb950;
+  background: var(--gh-primary);
+  color: #fff;
+  border-color: var(--gh-green);
 }
 .gw-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 270px;
-  border: 1px solid #30363d;
+  border: 1px solid var(--gh-border);
   border-radius: 8px;
   overflow: hidden;
 }
 .gw-canvas {
   position: relative;
   min-height: 490px;
-  background: #0d1117;
+  background: var(--gh-bg);
   min-width: 0;
 }
 .gw-inspector {
   padding: 20px;
-  background: #161b22;
-  border-left: 1px solid #30363d;
+  background: var(--gh-surface);
+  border-left: 1px solid var(--gh-border);
   display: flex;
   flex-direction: column;
   gap: 17px;
@@ -116,14 +117,14 @@
 .gw-example {
   font: 11px/1.7 monospace;
   overflow-wrap: anywhere;
-  color: #8b949e;
+  color: var(--gh-muted);
   margin: 0;
   padding: 10px;
-  background: #0d1117;
+  background: var(--gh-bg);
   border-radius: 5px;
 }
 .gw-delete {
-  color: #f85149 !important;
+  color: var(--gh-danger) !important;
 }
 .gw-help,
 .gw-status,
@@ -131,14 +132,14 @@
   font-size: 12px;
 }
 .gw-status {
-  color: #3fb950;
+  color: var(--gh-green);
 }
 .gw-error {
-  color: #f85149;
+  color: var(--gh-danger);
 }
 .gw-note {
-  border: 1px solid #30363d;
-  background: #161b22;
+  border: 1px solid var(--gh-border);
+  background: var(--gh-surface);
   border-radius: 6px;
   padding: 14px 16px;
   margin-top: 18px;
@@ -153,7 +154,7 @@
   }
   .gw-inspector {
     border-left: 0;
-    border-top: 1px solid #30363d;
+    border-top: 1px solid var(--gh-border);
   }
   .gw-heading {
     align-items: start;
@@ -177,6 +178,7 @@
 }
 .gw-runtime button {
   background: var(--gh-primary);
+  color: #fff;
   border-color: var(--gh-green);
 }
 .gw-shared-map {
@@ -264,8 +266,8 @@
 }
 .gw-badge-running {
   color: var(--gh-green);
-  background: #122019;
-  border-color: #238636;
+  background: var(--gh-success-bg);
+  border-color: var(--gh-primary);
 }
 .gw-config-connection {
   display: flex;
@@ -324,7 +326,8 @@
 }
 .gw-save-actions button:first-child {
   background: var(--gh-primary);
-  border-color: #2ea043;
+  color: #fff;
+  border-color: var(--gh-primary-hover);
 }
 .gw-config-body {
   display: grid;
@@ -333,7 +336,7 @@
 .gw-route-list {
   padding: 18px 12px;
   border-right: 1px solid var(--gh-border);
-  background: #0b1016;
+  background: var(--gh-inset);
 }
 .gw-route-list-heading {
   padding: 0 10px 12px;
@@ -372,8 +375,8 @@
   background: var(--gh-surface);
 }
 .gw-page .gw-route-item.is-selected {
-  background: #14241b;
-  border-color: #265f36;
+  background: var(--gh-success-bg);
+  border-color: var(--gh-success-border);
 }
 .gw-route-item > span {
   display: flex;
@@ -653,12 +656,13 @@
   white-space: nowrap;
   font-size: 12px;
   background: var(--gh-primary);
-  border-color: #2ea043;
+  color: #fff;
+  border-color: var(--gh-primary-hover);
   padding: 9px 14px;
   border-radius: 6px;
 }
 .gw-instance-add:hover:not(:disabled) {
-  background: #2ea043;
+  background: var(--gh-primary-hover);
 }
 .gw-instance-list {
   display: flex;
@@ -686,9 +690,9 @@
   border-color: var(--gh-muted);
 }
 .gw-instance-card.is-active {
-  border-color: #3fb950;
-  background: #122019;
-  box-shadow: inset 0 2px 0 #3fb950;
+  border-color: var(--gh-green);
+  background: var(--gh-success-bg);
+  box-shadow: inset 0 2px 0 var(--gh-green);
 }
 .gw-instance-card-top {
   display: flex;

@@ -1,3 +1,4 @@
+import { mountCertificateSetup } from "./certificate-setup";
 import { mountSystemProxy } from "./system-proxy";
 import { workspacePolicy } from "./access-policy";
 import { prependIcon } from "./icons";
@@ -50,10 +51,15 @@ export function mountLiveProxy(section: HTMLElement, hooks: Hooks) {
         <div class="proxy-domain-fields"><label class="proxy-tls-domains" data-proxy="domain-label">Selected hostnames<textarea data-proxy="tls-domains" rows="3" placeholder="api.example.com&#10;staging.example.com" spellcheck="false"></textarea><small>Exact DNS names, one per line. No https:// or paths.</small></label><label class="proxy-tls-domains">Excluded hostnames<textarea data-proxy="tls-excluded" rows="2" placeholder="private.example.com" spellcheck="false"></textarea><small>Excluded hosts always remain encrypted tunnels.</small></label></div>
         <p class="proxy-privacy-note">All-host mode may expose credentials and private traffic from background apps. HTTP/1.1 only; pinned certificates may reject inspection.</p>
       </section>
-      </div><div id="proxy-pane-certificate" role="tabpanel" aria-labelledby="proxy-tab-certificate" tabindex="0" data-proxy-pane="certificate" hidden><section class="proxy-certificate-card"><div class="proxy-settings-title"><div><h3>Local certificate</h3><p>Your machine’s development certificate authority.</p></div></div>
-        <p data-proxy="ca-state" class="proxy-ca-status" role="status">Checking CA…</p><dl class="proxy-ca-metadata"><dt>SHA-256 fingerprint</dt><dd data-proxy="ca-fingerprint">—</dd><dt>Expires</dt><dd data-proxy="ca-expiry">—</dd></dl>
-        <div class="proxy-ca-actions"><button data-proxy="ca-create">Create local CA</button><a data-proxy="ca-download" href="/__edith_proxy/ca" download="edith-debug-ca.cert.pem">Download public CA</a></div>
-        <details class="proxy-trust-guide"><summary>Trust on macOS</summary><ol><li>Download the public CA and import into the login keychain.</li><li>Verify its SHA-256 fingerprint above.</li><li>Open Trust → Secure Sockets Layer (SSL) → Always Trust.</li><li>Close the window and confirm with your Mac password.</li></ol><p>Trust is configured manually and cannot be detected here. Remove trust when finished. Never share the private key.</p></details>
+      </div><div id="proxy-pane-certificate" role="tabpanel" aria-labelledby="proxy-tab-certificate" tabindex="0" data-proxy-pane="certificate" hidden><section class="proxy-certificate-card"><div class="proxy-settings-title"><div><h3>Local certificate</h3><p>Set up HTTPS inspection in three steps. Your private key stays on this machine.</p></div></div>
+        <ol class="ca-setup-steps">
+          <li><span class="ca-step-number">1</span><div><h4>Create your certificate</h4><p data-proxy="ca-state" class="proxy-ca-status" role="status">Checking CA…</p><button data-proxy="ca-create">Create certificate</button></div></li>
+          <li><span class="ca-step-number">2</span><div><h4>Add to Keychain &amp; set trust</h4><p>Open the public certificate, add it to the <strong>login</strong> keychain, and compare its SHA-256 fingerprint.</p><div class="proxy-ca-actions"><button data-proxy="ca-open">Open in Keychain Access</button><button data-proxy="ca-copy">Copy fingerprint</button><a data-proxy="ca-download" href="/__edith_proxy/ca" download="edith-debug-ca.cert.pem">Download certificate</a></div><p data-proxy="ca-native-hint">In the browser or on other platforms, download the certificate and open your certificate manager manually.</p><details class="proxy-trust-guide" open><summary>How to trust on macOS</summary><ol><li>In Keychain Access, find <strong>EDITH</strong> in the login keychain and double-click the certificate.</li><li>Compare the SHA-256 fingerprint with Certificate details below.</li><li>Expand <strong>Trust</strong> and set <strong>Secure Sockets Layer (SSL)</strong> to <strong>Always Trust</strong>.</li><li>Close the certificate window and confirm with your Mac password.</li></ol></details></div></li>
+          <li><span class="ca-step-number">3</span><div><h4>Check certificate trust <span data-proxy="ca-trust-state" class="ca-trust-badge">Not checked</span></h4><p>Check whether macOS accepts this CA for SSL. This does not test the full proxy connection.</p><button data-proxy="ca-verify">Check trust on this Mac</button></div></li>
+        </ol>
+        <p data-proxy="ca-feedback" class="ca-setup-feedback" role="status" aria-live="polite"></p>
+        <details class="ca-certificate-details"><summary>Certificate details</summary><dl class="proxy-ca-metadata"><dt>SHA-256 fingerprint</dt><dd data-proxy="ca-fingerprint">—</dd><dt>Expires</dt><dd data-proxy="ca-expiry">—</dd></dl></details>
+        <p class="ca-setup-note">Only trust your own development CA. Remove its trust when finished. Certificate trust is never changed automatically.</p>
       </section>
     </div></div></div><div class="proxy-settings-footer">Connection and inspection changes apply on Start. Stop the proxy to edit them.</div>
   </details>`;
@@ -120,6 +126,7 @@ export function mountLiveProxy(section: HTMLElement, hooks: Hooks) {
     controls.querySelector("[data-system-proxy-slot]")!,
     () => observed?.state === "running" ? observed.port : null,
   );
+  const certificateSetup = mountCertificateSetup(controls);
   let abort: AbortController | undefined;
   async function api(path: string, body?: unknown): Promise<ProxyStatus> {
     const controller = new AbortController();
@@ -196,11 +203,12 @@ export function mountLiveProxy(section: HTMLElement, hooks: Hooks) {
       : element<HTMLInputElement>("tls-enabled").checked ? "Enabled on next Start" : "Off";
     const ca = status.inspection?.ca;
     element("ca-state").textContent = ca?.ready
-      ? "CA ready · client trust must be set manually"
+      ? "Certificate created · continue to step 2"
       : ca?.error || "CA service unavailable";
     element("ca-fingerprint").textContent = ca?.fingerprint256 || "—";
     element("ca-expiry").textContent = ca?.validTo || "—";
     element("ca-state").classList.toggle("is-ready", !!ca?.ready);
+    certificateSetup.update(ca);
     element("domain-label").classList.toggle(
       "is-inactive",
       element<HTMLInputElement>("tls-all").checked,
@@ -333,7 +341,7 @@ export function mountLiveProxy(section: HTMLElement, hooks: Hooks) {
       token = status.token || "";
       await api("ca/create", {});
       hooks.notify(
-        "CA created locally. Download and install trust manually only when needed.",
+        "Certificate created. Continue to step 2 to add it to Keychain Access.",
       );
     } catch (error) {
       hooks.notify(

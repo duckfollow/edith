@@ -6,7 +6,7 @@
   padding: 36px 20px;
   text-align: center;
   min-height: 200px;
-  color: var(--gh-text, #e6edf3);
+  color: var(--gh-text, var(--gh-text));
 }
 .edith-loading-graphic {
   display: grid;
@@ -32,9 +32,9 @@
   place-items: center;
   width: 1.25em;
   height: 1.25em;
-  border: 1px solid var(--gh-border, #30363d);
+  border: 1px solid var(--gh-border, var(--gh-border));
   border-radius: 6px;
-  background: var(--gh-bg, #0d1117);
+  background: var(--gh-bg, var(--gh-bg));
   text-align: center;
   animation-duration: 3s;
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -58,22 +58,22 @@
 }
 @keyframes edith-loading-slide-0 {
   0% { transform: translate(0em, 0); }
-  3% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  7% { transform: translate(0, -1.5em); color: #62e5b5; border-color: #62e5b5; }
-  14% { transform: translate(5.6em, -1.5em); color: #62e5b5; border-color: #62e5b5; }
-  19%, 20% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  23% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  3% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  7% { transform: translate(0, -1.5em); color: var(--gh-mint); border-color: var(--gh-mint); }
+  14% { transform: translate(5.6em, -1.5em); color: var(--gh-mint); border-color: var(--gh-mint); }
+  19%, 20% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  23% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   27% { transform: translate(5.6em, 0); }
-  39%, 40% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  43% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  39%, 40% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  43% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   47% { transform: translate(4.2em, 0); }
-  59%, 60% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  63% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  59%, 60% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  63% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   67% { transform: translate(2.8em, 0); }
-  79%, 80% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  83% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  79%, 80% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  83% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   87% { transform: translate(1.4em, 0); }
-  99%, 100% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  99%, 100% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
 }
 .edith-loading-letter:nth-child(2) {
   transform: translate(1.4em, 0);
@@ -81,22 +81,22 @@
 }
 @keyframes edith-loading-slide-1 {
   0% { transform: translate(1.4em, 0); }
-  3% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  3% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   7% { transform: translate(1.4em, 0); }
-  19%, 20% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  23% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  27% { transform: translate(0, -1.5em); color: #62e5b5; border-color: #62e5b5; }
-  34% { transform: translate(5.6em, -1.5em); color: #62e5b5; border-color: #62e5b5; }
-  39%, 40% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  43% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  19%, 20% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  23% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  27% { transform: translate(0, -1.5em); color: var(--gh-mint); border-color: var(--gh-mint); }
+  34% { transform: translate(5.6em, -1.5em); color: var(--gh-mint); border-color: var(--gh-mint); }
+  39%, 40% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  43% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   47% { transform: translate(5.6em, 0); }
-  59%, 60% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  63% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  59%, 60% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  63% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   67% { transform: translate(4.2em, 0); }
-  79%, 80% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  83% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  79%, 80% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  83% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   87% { transform: translate(2.8em, 0); }
-  99%, 100% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  99%, 100% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
 }
 .edith-loading-letter:nth-child(3) {
   transform: translate(2.8em, 0);
@@ -104,22 +104,22 @@
 }
 @keyframes edith-loading-slide-2 {
   0% { transform: translate(2.8em, 0); }
-  3% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  3% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   7% { transform: translate(2.8em, 0); }
-  19%, 20% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  23% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  19%, 20% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  23% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   27% { transform: translate(1.4em, 0); }
-  39%, 40% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  43% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  47% { transform: translate(0, -1.5em); color: #62e5b5; border-color: #62e5b5; }
-  54% { transform: translate(5.6em, -1.5em); color: #62e5b5; border-color: #62e5b5; }
-  59%, 60% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  63% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  39%, 40% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  43% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  47% { transform: translate(0, -1.5em); color: var(--gh-mint); border-color: var(--gh-mint); }
+  54% { transform: translate(5.6em, -1.5em); color: var(--gh-mint); border-color: var(--gh-mint); }
+  59%, 60% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  63% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   67% { transform: translate(5.6em, 0); }
-  79%, 80% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  83% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  79%, 80% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  83% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   87% { transform: translate(4.2em, 0); }
-  99%, 100% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  99%, 100% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
 }
 .edith-loading-letter:nth-child(4) {
   transform: translate(4.2em, 0);
@@ -127,22 +127,22 @@
 }
 @keyframes edith-loading-slide-3 {
   0% { transform: translate(4.2em, 0); }
-  3% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  3% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   7% { transform: translate(4.2em, 0); }
-  19%, 20% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  23% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  19%, 20% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  23% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   27% { transform: translate(2.8em, 0); }
-  39%, 40% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  43% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  39%, 40% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  43% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   47% { transform: translate(1.4em, 0); }
-  59%, 60% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  63% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  67% { transform: translate(0, -1.5em); color: #62e5b5; border-color: #62e5b5; }
-  74% { transform: translate(5.6em, -1.5em); color: #62e5b5; border-color: #62e5b5; }
-  79%, 80% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  83% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  59%, 60% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  63% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  67% { transform: translate(0, -1.5em); color: var(--gh-mint); border-color: var(--gh-mint); }
+  74% { transform: translate(5.6em, -1.5em); color: var(--gh-mint); border-color: var(--gh-mint); }
+  79%, 80% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  83% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   87% { transform: translate(5.6em, 0); }
-  99%, 100% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  99%, 100% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
 }
 .edith-loading-letter:nth-child(5) {
   transform: translate(5.6em, 0);
@@ -150,22 +150,22 @@
 }
 @keyframes edith-loading-slide-4 {
   0% { transform: translate(5.6em, 0); }
-  3% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  3% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   7% { transform: translate(5.6em, 0); }
-  19%, 20% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  23% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  19%, 20% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  23% { transform: translate(4.2em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   27% { transform: translate(4.2em, 0); }
-  39%, 40% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  43% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  39%, 40% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  43% { transform: translate(2.8em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   47% { transform: translate(2.8em, 0); }
-  59%, 60% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  63% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  59%, 60% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  63% { transform: translate(1.4em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
   67% { transform: translate(1.4em, 0); }
-  79%, 80% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  83% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
-  87% { transform: translate(0, -1.5em); color: #62e5b5; border-color: #62e5b5; }
-  94% { transform: translate(5.6em, -1.5em); color: #62e5b5; border-color: #62e5b5; }
-  99%, 100% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, #30363d); }
+  79%, 80% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  83% { transform: translate(0em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
+  87% { transform: translate(0, -1.5em); color: var(--gh-mint); border-color: var(--gh-mint); }
+  94% { transform: translate(5.6em, -1.5em); color: var(--gh-mint); border-color: var(--gh-mint); }
+  99%, 100% { transform: translate(5.6em, 0); color: inherit; border-color: var(--gh-border, var(--gh-border)); }
 }
 @media (prefers-reduced-motion: reduce) {
   .edith-loading-letter { animation: none; }

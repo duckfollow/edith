@@ -217,3 +217,15 @@ On macOS desktop, this preference defaults to on and remembers both the preferen
 ### Remember HTTPS inspection settings
 
 HTTPS inspection defaults to off on first use. The inspection switch, all-hostnames option, selected domains and exclusions are saved locally on edits and Start, and restored on the next visit. Stopped proxies show "Enabled on next Start" for a saved enabled configuration; running proxies display actual runtime settings. Restoring preferences does not start inspection or trust a CA automatically. A trusted client CA is still required.
+
+## ตั้งค่า Local certificate แบบสามขั้นตอน
+
+เปิด **Proxy settings → Certificate**:
+
+1. **Create your certificate** — หยุด Proxy แล้วกด Create certificate ด้วยสิทธิ์ Admin หากมี CA ที่ใช้งานได้อยู่แล้ว ไม่ต้องสร้างซ้ำ
+2. **Add to Keychain & set trust** — ใน macOS desktop กด Open in Keychain Access เพื่อเปิดใบรับรองสาธารณะ เลือก login keychain แล้วเปรียบเทียบ SHA-256 ด้วย Copy fingerprint หรือ Certificate details จากนั้นเปิด Trust → Secure Sockets Layer (SSL) → Always Trust ปิดหน้าต่างใบรับรองและยืนยันรหัสผ่าน macOS ด้วยตนเอง
+3. **Check certificate trust** — กด Check trust on this Mac เพื่อตรวจการยอมรับ CA ตาม SSL policy ของ macOS โดยไม่แก้ trust หากผ่านจะแสดง Trusted by macOS จากนั้นเปิด HTTPS inspection และ Start proxy
+
+การตรวจ Trust เป็นการตรวจใบรับรองกับ keychains ของ macOS ไม่ใช่การทดสอบ HTTPS ผ่าน Proxy แบบครบวงจร และไม่ได้ยืนยันว่าแอปที่มี trust store ของตัวเองหรือ certificate pinning จะยอมรับ CA ด้วย สถานะ Not checked ไม่ได้หมายความว่าไม่เชื่อถือ ต้องกดตรวจหลังตั้งค่า Trust หรือเปลี่ยนค่าใน Keychain Access
+
+ในเบราว์เซอร์หรือระบบอื่น ใช้ Download certificate และติดตั้ง/ตั้งค่า trust ผ่านเครื่องมือของระบบเอง ปุ่มเปิด Keychain และตรวจ Trust ใช้ได้บน macOS desktop โดยต้องเป็น Admin ของ workspace การเปิดใน Keychain Access ส่งเฉพาะ public certificate ไปยังแอปนั้น ไม่ส่ง private key และไม่ตั้งค่า Always Trust อัตโนมัติ

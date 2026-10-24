@@ -47,6 +47,8 @@ Access control supports a [local workspace policy](docs/access-control.md) and o
 
 Latest: [Management, Proxy settings, and app icons — 24 October 2026](docs/updates-2026-10-24.md).
 
+Appearance: choose **System**, **Light**, or **Dark** from the top bar. Your preference is remembered on this device. See [Appearance](docs/appearance.md).
+
 Previous: [HTTPS inspection — 23 October 2026](docs/updates-2026-10-23.md).
 
 Earlier development notes: [20–21 October 2026 updates](docs/updates-2026-10-21.md).

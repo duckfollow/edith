@@ -74,20 +74,20 @@ export function mountOverview(root: HTMLElement, actions: Actions) {
       button.setAttribute("aria-label", `Inspect ${count} ${name} requests`);
       const percent = total ? (count / total) * 100 : 0;
       const colors: Record<string, string> = {
-        "2xx": "#3fb950",
-        "3xx": "#58a6ff",
-        "4xx": "#d29922",
-        "5xx": "#f85149",
-        Failed: "#f85149",
-        GET: "#58a6ff",
-        POST: "#3fb950",
-        PUT: "#bc8cff",
-        PATCH: "#d29922",
-        DELETE: "#f85149",
-        HEAD: "#79c0ff",
+        "2xx": "var(--gh-green)",
+        "3xx": "var(--gh-blue)",
+        "4xx": "var(--gh-warning)",
+        "5xx": "var(--gh-danger)",
+        Failed: "var(--gh-danger)",
+        GET: "var(--gh-blue)",
+        POST: "var(--gh-green)",
+        PUT: "var(--gh-purple)",
+        PATCH: "var(--gh-warning)",
+        DELETE: "var(--gh-danger)",
+        HEAD: "var(--gh-blue)",
         OPTIONS: "#a5a9ff",
       };
-      button.style.setProperty("--bar-color", colors[name] || "#8b949e");
+      button.style.setProperty("--bar-color", colors[name] || "var(--gh-muted)");
       const label = el("span", "", "ov-distribution-label");
       label.append(el("i", "", "ov-distribution-dot"), el("span", name));
       const track = el("span", "", "ov-distribution-track");

@@ -2,7 +2,7 @@
 #app select {
   appearance: none;
   -webkit-appearance: none;
-  color-scheme: dark;
+  color-scheme: inherit;
   box-sizing: border-box;
   min-width: 0;
   max-width: 100%;
@@ -23,7 +23,7 @@
   transition: border-color 120ms, background-color 120ms;
 }
 #app select:hover:not(:disabled) {
-  background-color: #292e36;
+  background-color: var(--gh-hover);
   border-color: var(--gh-muted);
 }
 #app select:focus-visible {

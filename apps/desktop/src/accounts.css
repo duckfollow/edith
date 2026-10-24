@@ -34,6 +34,7 @@
 }
 .account-form button[type="submit"] {
   background: var(--gh-primary);
+  color: #fff;
   border-color: var(--gh-green);
 }
 .account-form p,
@@ -79,7 +80,7 @@
   color: var(--gh-text);
 }
 .account-login::backdrop {
-  background: #010409ed;
+  background: var(--gh-backdrop);
 }
 .account-login h2 {
   font-size: 21px;
@@ -265,7 +266,7 @@
   accent-color: var(--gh-green);
 }
 .account-row.has-changes {
-  background: #14241b;
+  background: var(--gh-success-bg);
 }
 .account-row[data-disabled="true"] .account-avatar {
   opacity: 0.5;
@@ -385,12 +386,12 @@
   width: min(420px, calc(100vw - 32px));
   padding: 30px;
   border-radius: 12px;
-  background: #0d1117;
-  border: 1px solid #30363d;
+  background: var(--gh-bg);
+  border: 1px solid var(--gh-border);
   box-shadow: 0 24px 100px #0008;
 }
 .account-login::backdrop {
-  background: #010409ed;
+  background: var(--gh-backdrop);
   backdrop-filter: blur(5px);
 }
 .account-login-brand {
@@ -405,8 +406,8 @@
   width: 38px;
   height: 38px;
   border-radius: 9px;
-  background: #e6edf3;
-  color: #0d1117;
+  background: var(--gh-text);
+  color: var(--gh-bg);
   font-size: 23px;
   font-weight: 700;
 }
@@ -422,14 +423,14 @@
 .account-login-brand > div > span {
   font-size: 8px;
   letter-spacing: 1.8px;
-  color: #8b949e;
+  color: var(--gh-muted);
 }
 .account-login-mode {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   font-size: 10px;
-  color: #8b949e;
+  color: var(--gh-muted);
 }
 .account-login-mode svg {
   width: 12px;
@@ -445,7 +446,7 @@
 .account-login-intro > p {
   font-size: 12px;
   line-height: 1.7;
-  color: #8b949e;
+  color: var(--gh-muted);
   margin: 0 0 26px;
 }
 .account-login .account-form {
@@ -459,15 +460,15 @@
 .account-login .account-form label {
   font-size: 11px;
   gap: 8px;
-  color: #c9d1d9;
+  color: var(--gh-text);
 }
 .account-login .account-form input {
   height: 42px;
   width: 100%;
   box-sizing: border-box;
   border-radius: 6px;
-  background: #010409;
-  border-color: #30363d;
+  background: var(--gh-inset);
+  border-color: var(--gh-border);
   font:
     13px -apple-system,
     BlinkMacSystemFont,
@@ -475,12 +476,12 @@
     sans-serif;
 }
 .account-login input::placeholder {
-  color: #6e7681;
+  color: var(--gh-muted);
 }
 .account-login .account-form input:focus-visible {
-  outline: 2px solid #58a6ff;
+  outline: 2px solid var(--gh-blue);
   outline-offset: 2px;
-  border-color: #58a6ff;
+  border-color: var(--gh-blue);
 }
 .account-password-field {
   position: relative;
@@ -499,13 +500,13 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #8b949e;
+  color: var(--gh-muted);
   cursor: pointer;
   border-radius: 4px;
 }
 .account-login .account-password-toggle:hover {
-  background: #21262d;
-  color: #e6edf3;
+  background: var(--gh-subtle);
+  color: var(--gh-text);
 }
 .account-password-toggle svg {
   width: 16px;
@@ -517,12 +518,13 @@
   font-weight: 600;
   border-radius: 6px;
   margin-top: 3px;
-  background: #238636;
-  border-color: #2ea043;
+  background: var(--gh-primary);
+  color: #fff;
+  border-color: var(--gh-primary-hover);
   color: #fff;
 }
 .account-login .account-form button[type="submit"]:hover:not(:disabled) {
-  background: #2ea043;
+  background: var(--gh-primary-hover);
 }
 .account-login .account-form button:disabled {
   opacity: 0.5;
@@ -537,12 +539,12 @@
   border: 1px solid #f8514944;
   border-radius: 6px;
   font-size: 11px;
-  color: #ff7b72;
+  color: var(--gh-danger);
   line-height: 1.6;
 }
 .account-caps-warning {
   font-size: 10px;
-  color: #d29922;
+  color: var(--gh-warning);
 }
 .account-login-footer {
   display: flex;
@@ -550,8 +552,8 @@
   gap: 7px;
   margin-top: 24px;
   padding-top: 18px;
-  border-top: 1px solid #21262d;
-  color: #6e7681;
+  border-top: 1px solid var(--gh-subtle);
+  color: var(--gh-muted);
 }
 .account-login-footer > svg {
   width: 12px;
@@ -627,29 +629,29 @@
 .is-local-workspace > .wb-title-row { align-items: center; margin-bottom: 30px; gap: 20px; }
 .is-local-workspace > .account-status:empty { display: none; }
 .management-mode { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--gh-border); border-radius: 20px; font-size: 11px; color: var(--gh-muted); white-space: nowrap; }
-.management-mode > span { width: 6px; height: 6px; background: #3fb950; border-radius: 50%; }
+.management-mode > span { width: 6px; height: 6px; background: var(--gh-green); border-radius: 50%; }
 .management-local { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
 .management-owner-card, .management-team-card { min-width: 0; padding: 28px; border: 1px solid var(--gh-border); border-radius: 14px; background: var(--gh-surface); }
 .management-owner-card { background: linear-gradient(145deg, #3fb9500b, transparent 60%), var(--gh-surface); }
 .management-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
 .management-symbol { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--gh-border); background: var(--gh-bg); color: var(--gh-muted); }
-.management-owner-card .management-symbol { color: #62e5b5; border-color: #3fb95040; background: #3fb9500a; }
+.management-owner-card .management-symbol { color: var(--gh-mint); border-color: #3fb95040; background: #3fb9500a; }
 .management-symbol svg { width: 19px; height: 19px; }
 .management-tag { font-size: 9px; font-weight: 600; letter-spacing: 0.12em; color: var(--gh-muted); }
 .management-local h2 { margin: 0 0 12px; font-size: 21px; line-height: 1.35; font-weight: 600; letter-spacing: -0.025em; }
 #tool-management .management-local p { margin: 0; color: var(--gh-muted); font-size: 12px; line-height: 1.8; }
 .management-owner { display: flex; align-items: center; gap: 12px; margin: 26px 0 8px; padding: 18px 0; border-top: 1px solid var(--gh-border); border-bottom: 1px solid var(--gh-border); }
-.management-avatar { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: #3fb95016; color: #62e5b5; font-size: 18px; font-weight: 650; }
+.management-avatar { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: #3fb95016; color: var(--gh-mint); font-size: 18px; font-weight: 650; }
 .management-owner > div { display: flex; flex: 1; flex-direction: column; gap: 6px; }
 .management-owner strong { font-size: 12px; }
 .management-owner small { font-size: 10px; color: var(--gh-muted); }
-.management-role { color: #62e5b5; background: #3fb95012; border-radius: 5px; padding: 5px 8px; font-size: 10px; }
+.management-role { color: var(--gh-mint); background: #3fb95012; border-radius: 5px; padding: 5px 8px; font-size: 10px; }
 .management-facts { margin: 0 0 22px; }
 .management-facts > div { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 11px 0; font-size: 11px; }
 .management-facts dt { color: var(--gh-muted); }
 .management-facts dd { margin: 0; color: var(--gh-text); }
-.management-owner-card > button { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 11px 14px; background: #238636; border: 1px solid #3fb95050; border-radius: 7px; color: #fff; font-size: 11px; cursor: pointer; }
-.management-owner-card > button:hover { background: #2ea043; }
+.management-owner-card > button { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 11px 14px; background: var(--gh-primary); border: 1px solid #3fb95050; border-radius: 7px; color: #fff; font-size: 11px; cursor: pointer; }
+.management-owner-card > button:hover { background: var(--gh-primary-hover); }
 .management-benefits { list-style: none; padding: 0; margin: 26px 0; display: grid; gap: 22px; }
 .management-benefits li { display: grid; grid-template-columns: 5px 1fr; column-gap: 12px; row-gap: 7px; }
 .management-benefits li::before { content: ""; width: 4px; height: 4px; border-radius: 50%; background: var(--gh-muted); margin-top: 5px; }
@@ -662,7 +664,7 @@
 .management-team-guide summary > span { color: var(--gh-muted); transition: transform 160ms; }
 .management-team-guide[open] summary > span { transform: rotate(90deg); }
 .management-command { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px; margin: 12px 0; background: var(--gh-bg); border: 1px solid var(--gh-border); border-radius: 7px; }
-.management-command code { flex: 1; color: #62e5b5; font-size: 11px; white-space: nowrap; user-select: all; }
+.management-command code { flex: 1; color: var(--gh-mint); font-size: 11px; white-space: nowrap; user-select: all; }
 .management-command button { font-size: 10px; }
 .management-team-guide a { color: var(--gh-blue); }
 .management-team-guide small { display: block; margin-top: 12px; color: var(--gh-muted); font-size: 10px; line-height: 1.7; }

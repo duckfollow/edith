@@ -3,8 +3,8 @@
   inset: 0;
   overflow: hidden;
   touch-action: none;
-  background-color: #0d1117;
-  background-image: radial-gradient(#30363d 1px, transparent 1px);
+  background-color: var(--gh-bg);
+  background-image: radial-gradient(var(--gh-border) 1px, transparent 1px);
   background-size: 22px 22px;
   cursor: grab;
 }
@@ -27,7 +27,7 @@
   stroke-width: 2;
 }
 .gw-wire-preview {
-  stroke: #58a6ff;
+  stroke: var(--gh-blue);
   stroke-dasharray: 6 4;
 }
 .gw-card {
@@ -35,20 +35,20 @@
   width: 220px;
   height: 90px;
   box-sizing: border-box;
-  border: 1px solid #30363d;
-  background: #161b22;
+  border: 1px solid var(--gh-border);
+  background: var(--gh-surface);
   border-radius: 8px;
   box-shadow: 0 6px 18px #0003;
 }
 .gw-card-listener {
-  border-color: #238636;
-  background: #122019;
+  border-color: var(--gh-primary);
+  background: var(--gh-success-bg);
 }
 .gw-card-backend {
-  border-color: #1f6feb;
+  border-color: var(--gh-blue);
 }
 .gw-card-selected {
-  outline: 2px solid #3fb950;
+  outline: 2px solid var(--gh-green);
   outline-offset: 2px;
 }
 .gw-diagram .gw-card-body {
@@ -67,7 +67,7 @@
 }
 .gw-card-body small {
   font-size: 9px;
-  color: #8b949e;
+  color: var(--gh-muted);
   letter-spacing: 1.4px;
 }
 .gw-card-body span {
@@ -85,8 +85,8 @@
   height: 18px;
   border-radius: 50%;
   padding: 0;
-  background: #3fb950;
-  border: 3px solid #0d1117;
+  background: var(--gh-green);
+  border: 3px solid var(--gh-bg);
   z-index: 2;
   cursor: crosshair;
 }
@@ -97,8 +97,8 @@
   right: -9px;
 }
 .gw-diagram .gw-port-pending {
-  background: #58a6ff;
-  outline: 2px solid #58a6ff;
+  background: var(--gh-blue);
+  outline: 2px solid var(--gh-blue);
 }
 .gw-map-controls {
   position: absolute;
@@ -108,8 +108,8 @@
   align-items: center;
   gap: 5px;
   padding: 5px;
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--gh-surface);
+  border: 1px solid var(--gh-border);
   border-radius: 7px;
   cursor: default;
 }
@@ -117,7 +117,7 @@
   font-size: 11px;
   min-width: 42px;
   text-align: center;
-  color: #8b949e;
+  color: var(--gh-muted);
 }
 .gw-diagram .gw-map-controls button {
   padding: 6px 10px;
@@ -127,15 +127,15 @@
   top: 12px;
   left: 12px;
   padding: 8px 12px;
-  border: 1px solid #1f6feb;
+  border: 1px solid var(--gh-blue);
   border-radius: 6px;
-  background: #161b22;
+  background: var(--gh-surface);
   font-size: 11px;
   pointer-events: none;
 }
 .gw-card-body:focus-visible,
 .gw-port:focus-visible {
-  outline: 2px solid #58a6ff;
+  outline: 2px solid var(--gh-blue);
   outline-offset: 3px;
 }
 /* Negative dash offset travels from the path source toward its target. */
@@ -161,7 +161,7 @@
 }
 
 .gw-diagram .gw-card-body {
-  color: #e6edf3;
+  color: var(--gh-text);
   font-family: inherit;
   border-radius: 7px;
   box-sizing: border-box;
@@ -180,7 +180,7 @@
 .gw-node-status {
   display: block;
   font-size: 10px;
-  color: #8b949e;
+  color: var(--gh-muted);
   margin-bottom: 9px;
   white-space: nowrap;
   overflow: hidden;
@@ -194,10 +194,10 @@
   flex: 1;
   min-width: 0;
   padding: 8px 5px;
-  border: 1px solid #30363d;
+  border: 1px solid var(--gh-border);
   border-radius: 5px;
-  background: #21262d;
-  color: #e6edf3;
+  background: var(--gh-subtle);
+  color: var(--gh-text);
   font:
     500 11px/1.3 -apple-system,
     BlinkMacSystemFont,
@@ -206,18 +206,19 @@
   cursor: pointer;
 }
 .gw-diagram .gw-node-actions .gw-node-action-start {
-  background: #238636;
-  border-color: #3fb950;
+  background: var(--gh-primary);
+  color: #fff;
+  border-color: var(--gh-green);
 }
 .gw-diagram .gw-node-actions .gw-node-action-stop {
-  background: #3b171b;
-  border-color: #da3633;
-  color: #ff7b72;
+  background: var(--gh-danger-bg);
+  border-color: var(--gh-danger);
+  color: var(--gh-danger);
 }
 .gw-diagram .gw-node-actions .gw-node-action-busy {
-  background: #21262d;
-  border-color: #30363d;
-  color: #8b949e;
+  background: var(--gh-subtle);
+  border-color: var(--gh-border);
+  color: var(--gh-muted);
 }
 .gw-diagram .gw-node-actions button:hover:not(:disabled) {
   filter: brightness(1.15);
@@ -227,11 +228,11 @@
   cursor: not-allowed;
 }
 .gw-diagram .gw-node-actions button[aria-pressed="true"] {
-  border-color: #58a6ff;
-  color: #79c0ff;
+  border-color: var(--gh-blue);
+  color: var(--gh-blue);
 }
 .gw-diagram .gw-node-actions button:focus-visible {
-  outline: 2px solid #58a6ff;
+  outline: 2px solid var(--gh-blue);
   outline-offset: 2px;
 }
 
@@ -255,21 +256,21 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #8b949e;
+  background: var(--gh-muted);
   margin-right: 6px;
   vertical-align: 1px;
 }
 .gw-node-status-running::before {
-  background: #3fb950;
+  background: var(--gh-green);
 }
 .gw-node-status-preview::before {
-  background: #58a6ff;
+  background: var(--gh-blue);
 }
 .gw-node-status-running {
-  color: #3fb950;
+  color: var(--gh-green);
 }
 .gw-diagram .gw-node-actions .gw-node-action-preview[aria-pressed="true"] {
-  background: #12243a;
-  border-color: #58a6ff;
-  color: #79c0ff;
+  background: var(--gh-info-bg);
+  border-color: var(--gh-blue);
+  color: var(--gh-blue);
 }
