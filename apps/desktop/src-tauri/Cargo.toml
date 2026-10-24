@@ -1,6 +1,6 @@
 [package]
 name = "appsdesktop"
-version = "0.1.0-alpha.3"
+version = "0.1.0-alpha.4"
 description = "Local-first desktop network monitor"
 authors = ["you"]
 edition = "2021"
