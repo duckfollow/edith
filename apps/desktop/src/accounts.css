@@ -675,3 +675,6 @@
 @media (max-width: 950px) { .management-local { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .management-owner-card, .management-team-card { padding: 22px; } .is-local-workspace > .wb-title-row { align-items: flex-start; flex-direction: column; } }
 @media (prefers-reduced-motion: reduce) { .management-team-guide summary > span { transition: none; } }
+
+.account-login-mark { background: transparent; flex-shrink: 0; }
+.account-login-mark > img { display: block; width: 100%; height: 100%; }

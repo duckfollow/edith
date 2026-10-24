@@ -94,7 +94,7 @@ const plugins: Array<{
 installDesktopRuntimeBridge();
 const root = document.querySelector<HTMLElement>("#app")!;
 root.innerHTML = `<div class="wb-shell">
-  <aside class="wb-sidebar"><div class="wb-brand"><span>E</span> EDITH <small>DEVELOPER TOOLS</small></div>
+  <aside class="wb-sidebar"><div class="wb-brand"><span aria-hidden="true"><img src="/brand/edith-mark.svg" alt="" width="32" height="32" /></span> EDITH <small>DEVELOPER TOOLS</small></div>
     <div class="wb-target"><span class="wb-target-icon">${iconMarkup("monitor")}</span><div><strong>Local file workspace</strong><small>No app or device connected</small></div></div>
     <p class="wb-label">DEBUG TOOLS</p><nav id="wb-nav" aria-label="Debug tools"></nav>
     <div class="wb-sidebar-note"><strong>Bring your own data</strong><p>Open a HAR, log, or JSON snapshot. Files are processed on this device.</p><button id="wb-guide">Connection guide ${iconMarkup("external")}</button></div>

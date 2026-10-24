@@ -102,19 +102,24 @@ export function mountSystemProxy(root: HTMLElement, runningPort: () => number | 
   refresh.onclick = () => void task(async () => {});
   if (isTauri()) {
     ready = task(async () => {});
-    let closing = false;
     void getCurrentWindow().onCloseRequested(async (event) => {
-      if (closing) return;
-      event.preventDefault();
-      if (busy) { note.textContent = "Wait for the System Proxy operation before closing."; return; }
+      // Tauri awaits this callback, then destroys the window if it is not
+      // prevented. Calling close() here creates a second close event instead.
+      if (busy) {
+        event.preventDefault();
+        note.textContent = "Wait for the System Proxy operation before closing.";
+        window.dispatchEvent(new CustomEvent("edith-runtime-notice", { detail: note.textContent }));
+        return;
+      }
       busy = true; draw();
       try {
         const latest = await invoke<Status>("system_proxy_status");
         if (latest.recovery) await restoreSettings();
-        closing = true;
-        await getCurrentWindow().close();
       } catch (e) {
+        event.preventDefault();
         note.textContent = `Unable to restore System Proxy before closing: ${String(e)}`;
+        details.open = true;
+        window.dispatchEvent(new CustomEvent("edith-runtime-notice", { detail: note.textContent }));
       } finally { busy = false; draw(); }
     }).catch(e => { note.textContent = `Automatic close cleanup unavailable: ${String(e)}. Restore saved settings before closing.`; });
   }

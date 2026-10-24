@@ -2859,3 +2859,12 @@ tbody tr.selected {
 }
 .wb-appearance:focus-within { outline: 2px solid var(--gh-blue); outline-offset: 3px; }
 @media (max-width: 650px) { .wb-top-actions { gap: 8px; } }
+
+/* Smart-glasses mark uses its own graphite tile in both appearance modes. */
+.wb-brand > span {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  flex-shrink: 0;
+}
+.wb-brand > span > img { display: block; width: 100%; height: 100%; }

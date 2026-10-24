@@ -90,3 +90,9 @@ The development plugin opens `.local/edith.sqlite` automatically using Node buil
 ## Root command shortcuts
 
 From the repository root use `npm run dev` for Local web mode, `npm run dev:team` for Team web mode, `npm run dev:desktop` for native development, and `npm run dev:api` for the example backend in a second terminal. No shell-specific environment syntax is needed for these commands. Stop the current server before changing modes. Original workspace commands remain available; the old Turbo dev command is now `npm run dev:legacy`.
+
+## Desktop Close lifecycle
+
+The System Proxy close listener awaits cleanup and lets Tauri complete the same close request. It does not recursively call `window.close()`. Tauri's JavaScript `onCloseRequested` wrapper uses `destroy()` after an unprevented callback, so the main-window capability includes `core:window:allow-destroy` as well as `allow-close`.
+
+Duplicate close requests are prevented while cleanup is pending. A failed/cancelled restoration prevents closing, shows a notification, retains recovery data, and permits retry. Regression tests in `src/system-proxy.test.mjs` cover these cases using the wrapper's actual await/prevent/destroy lifecycle.

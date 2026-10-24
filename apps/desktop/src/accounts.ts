@@ -162,7 +162,13 @@ export function mountAccounts(section: HTMLElement) {
     const brand = document.createElement("div");
     brand.className = "account-login-brand";
     const mark = document.createElement("span");
-    mark.textContent = "E";
+    const brandImage = document.createElement("img");
+    brandImage.src = "/brand/edith-mark.svg";
+    brandImage.alt = "";
+    brandImage.width = 38;
+    brandImage.height = 38;
+    mark.setAttribute("aria-hidden", "true");
+    mark.append(brandImage);
     mark.className = "account-login-mark";
     const brandText = document.createElement("div");
     brandText.innerHTML =
