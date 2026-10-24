@@ -4,6 +4,8 @@ A local-first, open-source desktop debugging workbench for **macOS, Windows, and
 
 EDITH brings local Gateway routing, HTTP inspection, logs, and CPU/RAM monitoring into one workbench. Local mode requires no account; optional Team mode adds login and account management. macOS installers bundle their local service. OS packet capture is still in development.
 
+**Installing the macOS app?** See [installation and first launch](docs/desktop-runtime.md#install-and-open-on-macos), including what to do when macOS displays **“EDITH” Not Opened** because the alpha build has not been notarized by Apple.
+
 ## Screenshots
 
 Development screenshots; newer Network, per-core CPU cards, account management, and top-bar layouts may differ.

@@ -2,6 +2,29 @@
 
 Starting with 0.1.0-alpha.3, the macOS installer runs its own local service. Open EDITH normally; Node.js, npm, Vite, and the repository are not required on the destination Mac.
 
+## Install and open on macOS
+
+1. Download the Apple Silicon `.dmg` from [GitHub Releases](https://github.com/duckfollow/edith/releases). The current installer requires macOS 13.5 or later.
+2. Stop any active proxy and quit the previous EDITH version before replacing it.
+3. Open the DMG and drag **EDITH** into **Applications**.
+4. Open EDITH from Applications.
+
+### “EDITH” Not Opened — Apple could not verify the app
+
+The current alpha build is ad-hoc signed and has **not been notarized by Apple**. macOS Gatekeeper may display **“Apple could not verify ‘EDITH’ is free of malware”** with **Move to Trash** and **Done** buttons. This means macOS cannot verify the downloaded app; it is not a guarantee that the app is safe.
+
+If you downloaded the intended release from this project's GitHub repository, trust its source, and choose to open it, follow these steps yourself:
+
+1. Click **Done** in the warning.
+2. Open **System Settings → Privacy & Security**.
+3. Scroll to **Security** and find the message about EDITH being blocked.
+4. Click **Open Anyway**.
+5. Authenticate with your Mac password or Touch ID if prompted, then click **Open** to confirm.
+
+macOS saves an exception for this app. You do not need to disable Gatekeeper for the whole system. If **Open Anyway** is missing, try opening EDITH once more and return to Privacy & Security; a managed Mac may require help from its administrator. If the warning instead says the app **will damage your computer**, do not treat it as the same unsigned-app warning.
+
+See Apple's [Safely open apps on your Mac](https://support.apple.com/en-au/102445) for the official steps. To remove this first-launch obstacle from future distributed builds, the release process needs **Developer ID signing and Apple notarization**; passing local tests or using an ad-hoc signature does not replace those steps.
+
 ## Included features
 
 - Local HTTP proxy and optional HTTPS inspection using a locally generated CA.
