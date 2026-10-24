@@ -2,7 +2,7 @@
 
 ## สถานะ
 
-เพิ่มระบบบัญชีระยะแรกสำหรับ **Vite development runtime** แล้ว Local mode เดิมไม่ต้องสมัครบัญชี ทั้งสองโหมดยังใช้บนเครื่องเดียวผ่าน loopback ไม่ใช่บริการบัญชีสำหรับเปิดให้เข้าใช้งานจากอินเทอร์เน็ต
+เพิ่มระบบบัญชีระยะแรกสำหรับ **Vite development runtime และแอป macOS แบบติดตั้ง** แล้ว Local mode เดิมไม่ต้องสมัครบัญชี ทั้งสองโหมดยังใช้บนเครื่องเดียวผ่าน loopback ไม่ใช่บริการบัญชีสำหรับเปิดให้เข้าใช้งานจากอินเทอร์เน็ต
 
 | โหมด | วิธีตรวจสิทธิ์ |
 | --- | --- |
@@ -136,3 +136,9 @@ From the repository root use `npm run dev` for Local web mode, `npm run dev:team
 ## Loading และการเปลี่ยนหน้า Login
 
 ตรวจ session ผ่าน loading dialog ก่อนแสดง Login โดยใช้ backdrop เดียวกัน ปุ่ม submit มี loading animation และป้องกันการส่งซ้ำ เมื่อ Login/สร้าง Admin สำเร็จจะโหลด policy และข้อมูลบัญชีต่อโดยไม่ reload ทั้งหน้า แล้วค่อย fade เข้าสู่ workspace หากรหัสผ่านผิดฟอร์มยังอยู่และแสดงข้อความให้ลองใหม่ รองรับ reduced motion ส่วน Logout/session revocation ยัง reload เพื่อล้างข้อมูลบัญชีก่อนหน้า ดู [Shared loading component](loading-component.md)
+
+## แอป macOS แบบติดตั้ง
+
+ตั้งแต่ 0.1.0-alpha.3 เปิด **Management → Enable Team mode** ได้จากแอปโดยตรง แล้วสร้างบัญชี Admin แรก ไม่ต้องใช้ terminal หรือกรอก setup token เอง Admin สามารถเลือก **Switch to Local mode** ได้ภายหลัง การเปลี่ยนโหมดหยุด Proxy/Gateway และคืนค่า System Proxy ก่อนเริ่มบริการใหม่ บัญชีและ Gateway ที่กด Save ไว้ยังอยู่ แต่ต้องเริ่ม listener ใหม่
+
+ข้อมูลของแอปติดตั้งแยกจาก `.local` ใน repository ดู [Desktop runtime](desktop-runtime.md)

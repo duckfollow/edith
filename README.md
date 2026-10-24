@@ -2,7 +2,7 @@
 
 A local-first, open-source desktop debugging workbench for **macOS, Windows, and Linux**.
 
-EDITH brings local Gateway routing, HTTP inspection, logs, and CPU/RAM monitoring into one workbench. Local mode requires no account; optional Team mode adds login and account management in the development runtime. OS packet capture is still in development.
+EDITH brings local Gateway routing, HTTP inspection, logs, and CPU/RAM monitoring into one workbench. Local mode requires no account; optional Team mode adds login and account management. macOS installers bundle their local service. OS packet capture is still in development.
 
 ## Screenshots
 
@@ -43,7 +43,7 @@ Filter captured requests by Gateway, route, status, and method.
 
 ## Current status
 
-Access control supports a [local workspace policy](docs/access-control.md) and optional [Team accounts with session-based roles](docs/accounts.md). Both currently apply to the development runtime.
+Access control supports a [local workspace policy](docs/access-control.md) and optional [Team accounts with session-based roles](docs/accounts.md). Both apply to the development runtime and the bundled macOS app.
 
 Latest: [Management, Proxy settings, and app icons — 24 October 2026](docs/updates-2026-10-24.md).
 
@@ -53,7 +53,7 @@ Previous: [HTTPS inspection — 23 October 2026](docs/updates-2026-10-23.md).
 
 Earlier development notes: [20–21 October 2026 updates](docs/updates-2026-10-21.md).
 
-**Early development — file-based debugging tools with a sample packet explorer. A live local HTTP proxy is available in the development runtime. A JavaScript SDK connects fetch, logs, and errors in development. OS packet capture is not implemented.**
+**Early development — file-based debugging tools with a sample packet explorer. A live local HTTP proxy is available in development and the bundled macOS app. A JavaScript SDK connects fetch, logs, and errors in development. OS packet capture is not implemented.**
 
 Implemented:
 
@@ -87,7 +87,7 @@ Implemented:
 - Native interface discovery command using Rust `pcap` (requires native build and dependencies).
 - Browser preview that clearly labels all generated traffic as sample data.
 
-Next: package the local proxy for desktop releases, a restricted platform capture helper, real packet parsing, robust capture lifecycle, PCAP files, and platform release validation. Encrypted traffic will not automatically expose HTTPS content. Per-app attribution is a later platform-specific feature.
+Next: a restricted platform capture helper, real packet parsing, robust capture lifecycle, PCAP files, and platform release validation. Encrypted traffic will not automatically expose HTTPS content. Per-app attribution is a later platform-specific feature.
 
 See [Accounts and Team mode](docs/accounts.md), [Gateway](docs/gateway.md), [System Monitor](docs/system-monitor.md), [Overview and graphs](docs/overview.md), [SDK setup and demo](docs/sdk.md), [live proxy setup](docs/local-proxy.md), [debug tools and sample files](docs/debug-tools.md), [product scope and architecture](docs/network-monitor.md) and [development setup](docs/development.md).
 
@@ -206,7 +206,7 @@ npm run build --workspace appsdesktop
 
 Tauri builds for the current machine's platform. With the default target directory, application bundles/installers are written under `apps/desktop/src-tauri/target/release/bundle`. Building for each OS requires that platform's build environment; Windows and Linux native builds have not yet been verified.
 
-The packaged desktop app includes native CPU/RAM monitoring and interface discovery. The live HTTP proxy, Gateway, and SDK receiver still require the development runtime and have not yet been packaged for desktop releases.
+The macOS installer includes the local HTTP/HTTPS proxy, Gateway, SDK receiver, SQLite storage, and optional Team accounts, alongside native CPU/RAM monitoring and interface discovery. No separate Node.js installation or development server is needed. Open Management to enable Team mode. See [bundled desktop runtime](docs/desktop-runtime.md) for data paths, lifecycle, SDK connection details, and packaging. The bundled runtime currently targets macOS 13.5+ only; Windows/Linux packaging remains unverified.
 
 ### Run the example API
 

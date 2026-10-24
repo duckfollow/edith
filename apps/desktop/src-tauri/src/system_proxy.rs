@@ -127,3 +127,18 @@ mod tests {
         assert_eq!(quote("Wi-Fi 'test'"), "'Wi-Fi '\\''test'\\''' ".trim_end());
     }
 }
+
+/// Restore before restarting the local service, while the listener is still alive.
+pub fn restore_for_runtime_change(app: &tauri::AppHandle) -> Result<(), String> {
+    let state = app.state::<ProxyLock>();
+    let _guard = state.0.lock().map_err(|_| "System proxy is busy")?;
+    if let Some(backup) = read_backup(app)? {
+        apply(&backup)?;
+        let actual = settings(&backup.service)?;
+        if !restored(&actual.http, &backup.http) || !restored(&actual.https, &backup.https) {
+            return Err("Restore verification failed; service was not restarted".into());
+        }
+        std::fs::remove_file(file(app)?).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}

@@ -1,3 +1,4 @@
+import { installDesktopRuntimeBridge } from "./desktop-bridge";
 import { mountAppearance } from "./theme";
 import { mountAccounts } from "./accounts";
 import { workspacePolicy, loadAccessPolicy } from "./access-policy";
@@ -90,6 +91,7 @@ const plugins: Array<{
     description: "Workspace accounts and access",
   },
 ];
+installDesktopRuntimeBridge();
 const root = document.querySelector<HTMLElement>("#app")!;
 root.innerHTML = `<div class="wb-shell">
   <aside class="wb-sidebar"><div class="wb-brand"><span>E</span> EDITH <small>DEVELOPER TOOLS</small></div>
@@ -1363,3 +1365,5 @@ void loadAccessPolicy().then(() =>
 );
 
 mountAccounts(get("#tool-management"));
+
+window.addEventListener("edith-runtime-notice", event => toast(String((event as CustomEvent).detail)));

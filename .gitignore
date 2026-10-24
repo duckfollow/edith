@@ -38,3 +38,6 @@ coverage/
 
 # Machine-local CA keys and capture state (never commit)
 /.local/
+
+# Downloaded desktop runtime, rebuilt from pinned official Node archive
+/apps/desktop/src-tauri/runtime/

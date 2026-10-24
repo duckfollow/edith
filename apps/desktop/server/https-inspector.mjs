@@ -77,6 +77,7 @@ export function createHttpsInspector({ directory, createScript } = {}) {
     if (!createScript) throw Error("CA creation unavailable");
     if (creating) return creating;
     creating = exec(process.execPath, [createScript], {
+      env: { ...process.env, EDITH_CA_DIRECTORY: directory },
       timeout: 60000,
       maxBuffer: 131072,
     })
@@ -118,7 +119,7 @@ export function createHttpsInspector({ directory, createScript } = {}) {
           { mode: 0o600 },
         );
         const runOpenSSL = (args) =>
-          exec("openssl", args, { timeout: 15000, maxBuffer: 131072 });
+          exec(process.env.EDITH_OPENSSL || "openssl", args, { timeout: 15000, maxBuffer: 131072 });
         await runOpenSSL([
           "req",
           "-new",

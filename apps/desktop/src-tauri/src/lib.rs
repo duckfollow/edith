@@ -1,3 +1,4 @@
+mod desktop_runtime;
 mod certificate;
 mod system_monitor;
 mod system_proxy;
@@ -48,7 +49,17 @@ pub fn run() {
     objc2_foundation::NSProcessInfo::processInfo()
         .setProcessName(objc2_foundation::ns_string!("EDITH"));
     tauri::Builder::default()
-        .setup(|_| {
+        .manage(desktop_runtime::DesktopRuntime::default())
+        .setup(|app| {
+            #[cfg(not(debug_assertions))]
+            {
+                use tauri::Manager;
+                if let Err(error) = app.state::<desktop_runtime::DesktopRuntime>().start(app.handle()) {
+                    eprintln!("EDITH service startup: {error}");
+                }
+            }
+            #[cfg(debug_assertions)]
+            let _ = app;
             // `tauri dev` runs an unbundled executable, so macOS needs an
             // explicit Dock icon in addition to the installer bundle icons.
             #[cfg(target_os = "macos")]
@@ -73,6 +84,10 @@ pub fn run() {
         .manage(Mutex::new(SystemSampler::default()))
         .manage(system_proxy::ProxyLock(Mutex::new(())))
         .invoke_handler(tauri::generate_handler![
+            desktop_runtime::desktop_set_workspace_mode,
+            desktop_runtime::desktop_runtime_info,
+            desktop_runtime::desktop_runtime_request,
+            desktop_runtime::desktop_save_public_ca,
             certificate::local_certificate_action,
             system_proxy::system_proxy_status,
             system_proxy::system_proxy_read,
@@ -80,6 +95,21 @@ pub fn run() {
             list_interfaces,
             sample_system_metrics
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running EDITH");
+        .build(tauri::generate_context!())
+        .expect("error while building EDITH")
+        .run(|app, event| {
+            use tauri::{Emitter, Manager};
+            match event {
+                tauri::RunEvent::ExitRequested { api, .. } => {
+                    if app.state::<desktop_runtime::DesktopRuntime>().is_running() {
+                        if let Err(error) = system_proxy::restore_for_runtime_change(app) {
+                            api.prevent_exit();
+                            let _ = app.emit("edith-runtime-error", format!("Unable to restore System Proxy before quitting: {error}"));
+                        }
+                    }
+                }
+                tauri::RunEvent::Exit => app.state::<desktop_runtime::DesktopRuntime>().stop(),
+                _ => {}
+            }
+        });
 }

@@ -148,7 +148,7 @@ export function mountLiveProxy(section: HTMLElement, hooks: Hooks) {
       });
       if (!response.headers.get("content-type")?.includes("application/json"))
         throw new Error(
-          "Local proxy service is available in the Vite development workspace. Packaged desktop support is not bundled yet.",
+          "The local proxy service is unavailable. Restart EDITH or its development server.",
         );
       const value = await response.json();
       if (!response.ok)

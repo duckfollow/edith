@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { X509Certificate, createPublicKey } from "node:crypto";
 const root = fileURLToPath(new URL("../", import.meta.url));
-const directory = path.join(root, ".local", "ca");
+const directory = process.env.EDITH_CA_DIRECTORY || path.join(root, ".local", "ca");
 if (existsSync(directory))
   throw new Error(
     "A CA directory already exists at .local/ca. Refusing to replace or rotate existing key material.",
@@ -25,7 +25,7 @@ try {
     { mode: 0o600, flag: "wx" },
   );
   function openssl(args) {
-    return execFileSync("openssl", args, {
+    return execFileSync(process.env.EDITH_OPENSSL || "openssl", args, {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
     });

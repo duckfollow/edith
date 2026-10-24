@@ -1,3 +1,5 @@
+import { desktopSetupToken, switchDesktopWorkspace } from "./desktop-bridge";
+import { isBundledDesktop } from "./runtime-mode";
 import { createLoading } from "./components/loading";
 import { loadAccessPolicy } from "./access-policy";
 import { icon } from "./icons";
@@ -151,6 +153,12 @@ export function mountAccounts(section: HTMLElement) {
         await refresh();
       },
     );
+    const setupInput = f.querySelector<HTMLInputElement>('input[name="setupToken"]');
+    if (setupInput && isBundledDesktop() && desktopSetupToken()) {
+      setupInput.value = desktopSetupToken();
+      setupInput.closest("label")!.hidden = true;
+      p.textContent = "Create the first Admin for this device. Passwords must contain at least 12 characters.";
+    }
     const brand = document.createElement("div");
     brand.className = "account-login-brand";
     const mark = document.createElement("span");
@@ -264,6 +272,28 @@ export function mountAccounts(section: HTMLElement) {
       const sessionName = document.createElement("span");
       sessionName.textContent = `${user.username} · ${user.role}`;
       session.append(sessionName, logout);
+      if (isBundledDesktop() && user.role === "admin") {
+        const localMode = document.createElement("button");
+        localMode.textContent = "Switch to Local mode";
+        let confirmLocal = false;
+        const cancelLocal = document.createElement("button");
+        cancelLocal.textContent = "Cancel";
+        cancelLocal.hidden = true;
+        cancelLocal.onclick = () => { confirmLocal = false; localMode.textContent = "Switch to Local mode"; cancelLocal.hidden = true; };
+        localMode.onclick = async () => {
+          if (!confirmLocal) {
+            confirmLocal = true;
+            localMode.textContent = "Confirm Local mode — stop live listeners";
+            cancelLocal.hidden = false;
+            message("Save Gateway edits before switching. Accounts remain saved.");
+            return;
+          }
+          localMode.disabled = true;
+          try { await switchDesktopWorkspace("local"); location.reload(); }
+          catch (error) { message(error); localMode.disabled = false; }
+        };
+        session.append(localMode, cancelLocal);
+      }
       heading.append(session);
       if (user.role !== "admin") {
         body.textContent =
@@ -485,6 +515,37 @@ export function mountAccounts(section: HTMLElement) {
         try { await navigator.clipboard.writeText("npm run dev:team"); feedback.textContent = "Command copied."; }
         catch { feedback.textContent = "Select and copy the command above."; }
       };
+      if (isBundledDesktop()) {
+        const teamCard = body.querySelector<HTMLElement>(".management-team-card");
+        if (teamCard) {
+          const guide = teamCard.querySelector(".management-team-guide");
+          if (guide) guide.remove();
+          const enable = document.createElement("button");
+          enable.textContent = "Enable Team mode";
+          enable.className = "wb-primary";
+          const hint = document.createElement("p");
+          hint.textContent = "Switch modes inside the app. Your local accounts and Gateway setups stay on this device.";
+          let confirmTeam = false;
+          const cancelTeam = document.createElement("button");
+          cancelTeam.textContent = "Cancel";
+          cancelTeam.hidden = true;
+          cancelTeam.onclick = () => {
+            confirmTeam = false; enable.textContent = "Enable Team mode"; cancelTeam.hidden = true;
+            hint.textContent = "Switch modes inside the app. Your local accounts and Gateway setups stay on this device.";
+          };
+          enable.onclick = async () => {
+            if (!confirmTeam) {
+              confirmTeam = true; enable.textContent = "Confirm Team mode"; cancelTeam.hidden = false;
+              hint.textContent = "Live listeners will stop. Save Gateway edits first. Next, sign in or create the first Admin.";
+              return;
+            }
+            enable.disabled = true;
+            try { await switchDesktopWorkspace("team"); location.reload(); }
+            catch (error) { hint.textContent = String(error); enable.disabled = false; }
+          };
+          teamCard.append(enable, cancelTeam, hint);
+        }
+      }
       await finishSessionLoading();
     }
   }

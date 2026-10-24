@@ -1,3 +1,4 @@
+import { desktopServiceOrigin } from "./desktop-bridge";
 import { prependIcon } from "./icons";
 import type { HttpEntry, LogEntry } from "./debug-model";
 interface App {
@@ -94,7 +95,7 @@ export function mountSdkConnection(root: HTMLElement, hooks: Hooks) {
     const snippet = el<HTMLTextAreaElement>("snippet");
     snippet.hidden = !state.enabled;
     if (state.enabled && state.pairingToken)
-      snippet.value = `import { createEdith } from '@edith/sdk';\n\nconst edith = createEdith({\n  enabled: import.meta.env.DEV,\n  appName: 'My app',\n  endpoint: '${location.origin}/__edith_sdk/events',\n  token: '${state.pairingToken}',\n  captureBodies: false,\n});\nedith.install({ captureConsole: true });\n// On teardown: edith.dispose();`;
+      snippet.value = `import { createEdith } from '@edith/sdk';\n\nconst edith = createEdith({\n  enabled: import.meta.env.DEV,\n  appName: 'My app',\n  endpoint: '${desktopServiceOrigin()}/__edith_sdk/events',\n  token: '${state.pairingToken}',\n  captureBodies: false,\n});\nedith.install({ captureConsole: true });\n// On teardown: edith.dispose();`;
   }
   async function api(path: string, body?: object): Promise<SdkState> {
     const response = await fetch(`/__edith_sdk/${path}`, {

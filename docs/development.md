@@ -65,7 +65,7 @@ See [Debug Tools](debug-tools.md) for imports, formats, sample fixtures, export 
 
 ## Local proxy runtime
 
-The Vite plugin exposes same-origin local proxy controls. See [setup and boundaries](local-proxy.md). It runs in Node with built-in modules and needs no additional npm dependencies. The packaged desktop build still needs a bundled backend implementation; the UI reports an unavailable service outside the development runtime. The test script includes loopback proxy integration tests.
+The Vite plugin exposes same-origin local proxy controls. See [setup and boundaries](local-proxy.md). It runs in Node with built-in modules and needs no additional npm dependencies. The macOS packaged build includes a bundled Node service connected through restricted native IPC; see [desktop runtime](desktop-runtime.md). The test script includes loopback proxy integration tests.
 
 ## SDK development
 
