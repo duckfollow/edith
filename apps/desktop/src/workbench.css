@@ -2868,3 +2868,29 @@ tbody tr.selected {
   flex-shrink: 0;
 }
 .wb-brand > span > img { display: block; width: 100%; height: 100%; }
+
+/* Keep Updates reachable while the tool list scrolls independently. */
+.wb-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow: hidden;
+}
+.wb-sidebar > .wb-brand,
+.wb-sidebar > .wb-bottom,
+#wb-updates { flex-shrink: 0; }
+.wb-sidebar-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.wb-sidebar-scroll > * { flex-shrink: 0; }
+.wb-sidebar > .wb-bottom { margin-top: 0; padding-top: 8px; }
+@media (max-width: 600px) {
+  .wb-sidebar { position: static; height: auto; overflow: visible; }
+  .wb-sidebar-scroll { display: contents; }
+}

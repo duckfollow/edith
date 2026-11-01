@@ -334,3 +334,7 @@ The previous media-storage implementation is retained while the desktop app chan
 ## License
 
 EDITH is MIT licensed. Third-party dependencies retain their own licenses. In particular, Windows Npcap distribution requires a separate review; no driver is bundled by this project.
+
+## Application updates
+
+Open **Updates** at the bottom of the desktop sidebar to check official `duckfollow/edith` GitHub releases, see release notes, and open the download page. EDITH checks automatically after startup, at most once per day; manual checks bypass that interval. Alpha builds receive newer alpha and stable versions; stable builds receive stable versions only. Downloads and installation remain manual. Browser development mode previews the Updates window; release checks run in the desktop app. Checks send the EDITH version to GitHub, without workspace traffic, logs, or credentials.

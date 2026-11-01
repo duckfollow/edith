@@ -1,3 +1,4 @@
+mod updates;
 mod desktop_runtime;
 mod certificate;
 mod system_monitor;
@@ -92,6 +93,9 @@ pub fn run() {
             system_proxy::system_proxy_status,
             system_proxy::system_proxy_read,
             system_proxy::system_proxy_change,
+            updates::check_for_updates,
+            updates::open_release_page,
+            updates::open_companion_app,
             list_interfaces,
             sample_system_metrics
         ])

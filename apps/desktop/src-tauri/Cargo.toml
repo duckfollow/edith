@@ -26,11 +26,12 @@ tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+semver = "1"
 pcap = "2"
 
 sysinfo = "0.39"
 getrandom = "0.3"
-reqwest = { version = "0.12", default-features = false, features = ["blocking", "cookies"] }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "cookies", "rustls-tls"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "0.6"

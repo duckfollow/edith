@@ -1,3 +1,4 @@
+import { mountUpdates } from "./UpdateNotice";
 import { installDesktopRuntimeBridge } from "./desktop-bridge";
 import { mountAppearance } from "./theme";
 import { mountAccounts } from "./accounts";
@@ -95,10 +96,12 @@ installDesktopRuntimeBridge();
 const root = document.querySelector<HTMLElement>("#app")!;
 root.innerHTML = `<div class="wb-shell">
   <aside class="wb-sidebar"><div class="wb-brand"><span aria-hidden="true"><img src="/brand/edith-mark.svg" alt="" width="32" height="32" /></span> EDITH <small>DEVELOPER TOOLS</small></div>
+    <div class="wb-sidebar-scroll">
     <div class="wb-target"><span class="wb-target-icon">${iconMarkup("monitor")}</span><div><strong>Local file workspace</strong><small>No app or device connected</small></div></div>
     <p class="wb-label">DEBUG TOOLS</p><nav id="wb-nav" aria-label="Debug tools"></nav>
     <div class="wb-sidebar-note"><strong>Bring your own data</strong><p>Open a HAR, log, or JSON snapshot. Files are processed on this device.</p><button id="wb-guide">Connection guide ${iconMarkup("external")}</button></div>
-    <div class="wb-bottom"><span class="wb-dot"></span> Offline workspace <small>Built-in tools · v0.1 alpha</small></div>
+    </div>
+    <div id="wb-updates"></div>
   </aside>
   <div class="wb-workspace"><header class="wb-top"><div class="wb-breadcrumb"><em id="wb-workspace-name">Local workspace</em><span>/</span> <strong id="wb-tool-name">Network</strong></div><div class="wb-top-actions"><span class="wb-local">${iconMarkup("shield")} Local processing</span><div id="wb-account-slot"></div></div></header>
   <div id="wb-content">
@@ -112,6 +115,7 @@ root.innerHTML = `<div class="wb-shell">
     <section id="tool-packets" hidden><div id="packet-tool"></div></section>
   </div></div></div><div id="wb-toast" class="wb-toast" role="status" hidden></div>
   <dialog id="wb-guide-dialog"><div class="wb-dialog-heading"><h2>Connect your debugging data</h2><button id="wb-close-guide" aria-label="Close guide">${iconMarkup("close")}</button></div><p>EDITH can inspect traffic routed through its development local proxy, or read files you choose. It does not automatically decrypt HTTPS.</p><ol><li><strong>HTTP requests:</strong> start the local proxy and configure your app to use it, or import a HAR. HTTPS tunnels show destinations only.</li><li><strong>Logs:</strong> import UTF-8 text or JSONL, one event per line. Pino numeric levels are supported.</li><li><strong>Storage:</strong> import a JSON object. Edits affect the loaded snapshot only; export to save a copy.</li><li><strong>Packets:</strong> explore sample traffic and native interface discovery. Privileged live capture is still in development.</li></ol><p>HAR files can contain credentials and personal data. Common secret headers are masked initially; bodies may still contain sensitive data.</p><p>JavaScript SDK connections support fetch, logs, and errors in development. Device discovery, live app storage, database queries, and layout inspection are not implemented.</p></dialog>`;
+mountUpdates(root.querySelector<HTMLElement>("#wb-updates")!);
 function get<T extends HTMLElement = HTMLElement>(selector: string) {
   return root.querySelector<T>(selector)!;
 }
